@@ -126,7 +126,7 @@ void makeTemplatesTop(TString path2file, TString era, TString cat, TString wpmin
   for (int i0=0; i0<syst.size(); ++i0) {
     name_ = syst.at(i0); namesys_ = "";
     if (syst.at(i0)=="_")  { name_ = "nom"; namesys_ = "nom"; }
-    if (syst.at(i0)=="pu") { namesys_ = "pu"; }
+    //if (syst.at(i0)=="pu") { namesys_ = "pu"; }
     
     if (syst.at(i0)=="_") { makeMCHistosTop(name,path,processes,process_names,name_,namesys_,lumi,cuts,brX,binsX,minX,maxX,brY,binsY,minY,maxY,fout); }
     else {
@@ -162,12 +162,13 @@ void makeMCHistosTop(TString name, TString path, std::vector<TString> processes,
   else if ( (sys.Contains("lhe")) || (sys.Contains("ps")) ) { sys_dir = "/mc_sys/LHEWeight/"; }
   else                                                      { sys_dir = "/mc_sys/"+sys+sys_type; }
 
-  if ( (sys == "nom") || (sys == "pu") ) { name = name+"_"+sys; }
-  else                                   { name = name+"_"+sys+sysType; }
+  //if ( (sys == "nom") || (sys == "pu") ) { name = name+"_"+sys; }
+  if ( (sys == "nom") ) { name = name+"_"+sys; }
+  else                  { name = name+"_"+sys+sysType; }
 
   TString name_b;
   if (sys == "nom")      { name_b = ""; }
-  else if (sys == "pu")  { name_b = sysType; }
+  //else if (sys == "pu")  { name_b = sysType; }
   else                   { name_b = sys+sysType; }
   
   std::vector<TH2D*>   h2ds;       h2ds.clear();
