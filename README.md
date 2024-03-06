@@ -43,6 +43,8 @@ cd CombineHarvester/
 
 scram b -j 8
 
+cd ../../../ParticleNetSF/
+
 Run the full chain for SF extraction:
 ------------------------------------
 
