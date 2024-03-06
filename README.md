@@ -14,8 +14,6 @@ cmsenv
 
 git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
 
-git clone https://github.com/cms-analysis/CombineHarvester.git
-
 cd $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit
 
 git fetch origin
@@ -33,6 +31,17 @@ git clone -b ParticleNet_TopW_SFs_NanoV9 https://github.com/cms-jet/ParticleNetS
 cd ParticleNetSF/
 
 cp TagAndProbeExtended.py ../CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit/python
+
+
+Installing CombineHarvester (lpc)
+------------------------
+cd ../CMSSW_10_2_13/src/
+
+git clone -b 102x https://github.com/cms-analysis/CombineHarvester.git
+
+cd CombineHarvester/
+
+scram b -j 8
 
 Run the full chain for SF extraction:
 ------------------------------------
