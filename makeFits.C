@@ -12,8 +12,13 @@ void makeFits(std::string era, std::string category, std::string wpmin, std::str
 
   std::vector<TString> name  = conf::name;
   
-  if (sample=="tt1L" || sample=="ttbar1L" || (sample=="ttbar1l") || (sample=="tt1l")) {
-    for (int i0=0; i0<name.size(); ++i0) { makeOneFitTop(era,category,wpmin,wpmax,(std::string)name[i0],(std::string)conf::algo); } }
+  if(sample=="tt1l")
+    {
+      for (int i0=0; i0<name.size(); ++i0) 
+	{ 
+	  makeOneFitTop(era,category,wpmin,wpmax,(std::string)name[i0],(std::string)conf::algo);
+	} 
+    }
 }
 
 

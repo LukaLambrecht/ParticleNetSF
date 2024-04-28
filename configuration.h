@@ -45,40 +45,55 @@ namespace conf {
 
     // =================== area to modify - tune ===================== //
    
-    if ( (sample == "tt1L") || (sample=="ttbar1L") || (sample=="ttbar1l") || (sample == "tt1l") || (sample == "tt1lw") ) {
-      path_2016 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2016/from_Huilin/20211212_NanoAODv9_ak8_muon_2015/";
-      //path_2016 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2016/from_Huilin/20211212_NanoAODv9_ak8_muon_2016/";
-      path_2017 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2017/from_Huilin/20211212_NanoAODv9_ak8_muon_2017/";
-      path_2018 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2018/from_Huilin/20211212_NanoAODv9_ak8_muon_2018/";
+    if (sample == "tt1l") 
+      {
+	path_2016 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2016/from_Huilin/20211212_NanoAODv9_ak8_muon_2015/";
+	//path_2016 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2016/from_Huilin/20211212_NanoAODv9_ak8_muon_2016/";
+	path_2017 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2017/from_Huilin/20211212_NanoAODv9_ak8_muon_2017/";
+	path_2018 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2018/from_Huilin/20211212_NanoAODv9_ak8_muon_2018/";
       
-      jetCone    = "ak8";
-      jet_prefix = "fj_1_";
+	jetCone    = "ak8";
+	jet_prefix = "fj_1_";
       
-      brX = jet_prefix+"sdmass"; 
-      brY = jet_prefix+"pt";
-      //category = "top"; //Top-Tagger
-      category = "w"; //W-Tagger
- 
-     // for make2DTemplates
-      processes.push_back("ttbar-powheg"); process_names.push_back("tt"); 
-      processes.push_back("singletop");    process_names.push_back("st");
-      processes.push_back("ttv");          process_names.push_back("ttv");
-      processes.push_back("w");            process_names.push_back("wll");
-      processes.push_back("diboson");      process_names.push_back("vv");
-      //processes.push_back("qcd-mg");       process_names.push_back("qcd");
+	brX = jet_prefix+"sdmass"; 
+	brY = jet_prefix+"pt";
+	//category = "top"; //Top-Tagger
+	category = "w"; //W-Tagger
+	
+	processes.clear();
+	process_names.clear();
+	processes_in.clear();
+	syst.clear();
+	
+	// for make2DTemplates
+	processes.push_back("ttbar-powheg"); process_names.push_back("tt"); 
+	processes.push_back("singletop");    process_names.push_back("st");
+	processes.push_back("ttv");          process_names.push_back("ttv");
+	processes.push_back("w");            process_names.push_back("wll");
+	processes.push_back("diboson");      process_names.push_back("vv");
+	//processes.push_back("qcd-mg");       process_names.push_back("qcd");
+	
+	// keep this format - pretify later - need to keep this order
+	processes_in.push_back("tt_p3"); processes_in.push_back("st_p3"); processes_in.push_back("ttv_p3");
+	processes_in.push_back("tt_p2"); processes_in.push_back("st_p2"); processes_in.push_back("ttv_p2"); 
+	processes_in.push_back("tt_p1"); processes_in.push_back("st_p1"); processes_in.push_back("ttv_p1");
+	processes_in.push_back("wll");   processes_in.push_back("vv");    //processes_in.push_back("qcd"); 
+	
+	// list of systematic uncertainties
+	syst.push_back("_");
 
-      // keep this format - pretify later - need to keep this order
-      processes_in.push_back("tt_p3"); processes_in.push_back("st_p3"); processes_in.push_back("ttv_p3");
-      processes_in.push_back("tt_p2"); processes_in.push_back("st_p2"); processes_in.push_back("ttv_p2"); 
-      processes_in.push_back("tt_p1"); processes_in.push_back("st_p1"); processes_in.push_back("ttv_p1");
-      processes_in.push_back("wll");   processes_in.push_back("vv");    //processes_in.push_back("qcd"); 
+	syst.push_back("pu"); 
+	syst.push_back("jes"); 
+	syst.push_back("jer");
+	syst.push_back("met"); 
+	syst.push_back("jms");
+	syst.push_back("jmr");
+	syst.push_back("lhescalemuf"); 
+	syst.push_back("lhescalemur"); 
 
-      // list of systematic uncertainties
-      syst.push_back("_"); syst.push_back("pu"); syst.push_back("jes"); syst.push_back("jer"); syst.push_back("met"); 
-      syst.push_back("jms"); syst.push_back("jmr");
-      syst.push_back("lhescalemuf"); syst.push_back("lhescalemur"); //syst.push_back("lhepdf");
-    }
-
+	//syst.push_back("lhepdf");
+      }
+    
 
     //algo      = "particlenet"; //Nominal
     algo      = "particlenetmd";  //MD
@@ -88,18 +103,19 @@ namespace conf {
     binsX = 34; minX = 50;  maxX = 220.;
     //binsY = 40; minY = 200; maxY = 1200.; //Top-Tagger
     binsY = 40; minY = 200; maxY = 800.; //W-Tagger
-       
-     // Top
+    
+    // Top
     //name.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);
     //name.push_back("pt400to480"); ptmin.push_back(400.); ptmax.push_back(480.);  
     //name.push_back("pt480to600"); ptmin.push_back(480.); ptmax.push_back(600.);   
     //name.push_back("pt600to1200"); ptmin.push_back(600.); ptmax.push_back(1200.);
     //name.push_back("200to1200"); ptmin.push_back(200.); ptmax.push_back(1200.);
-     
+    
     //W
-    name.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
+    //name.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
     //name.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);  
-    //name.push_back("pt400to800"); ptmin.push_back(400.); ptmax.push_back(800.);   
+    //name.push_back("pt400to800"); ptmin.push_back(400.); ptmax.push_back(800.);
+    name.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
     
     // =================== end of area to modify - tune ===================== //
 

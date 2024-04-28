@@ -8,7 +8,7 @@ void makeDatacards(TString era, TString sample, TString category, TString wpmin,
   conf::configuration(sample);
 
   std::vector<TString> name  = conf::name;
-  if (sample=="tt1L" || sample=="ttbar1L" || (sample=="ttbar1l") || (sample=="tt1l") ) 
+  if(sample=="tt1l") 
     {
       for (int i0=0; i0<name.size(); ++i0) 
 	{
@@ -26,10 +26,6 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   TString label0;
   TString name = (TString)name_;
   TString inputname_ = (TString)inputname;
-  if (inputname_.Contains("tau21ddt"))                                                           { label0 = "tau21ddt"; }
-  if (inputname_.Contains("dak8ddt"))                                                            { label0 = "dak8ddt"; }
-  if (inputname_.Contains("dak8md"))                                                             { label0 = "dak8md"; }
-  if (inputname_.Contains("dak8") && !(inputname_.Contains("md") || inputname_.Contains("ddt"))) { label0 = "dak8"; }
   if (inputname_.Contains("particlenetmd"))                                                      { label0 = "particlenetmd"; }
   if (inputname_.Contains("particlenet_"))                                                        { label0 = "particlenet"; }
   
@@ -44,16 +40,18 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   TString p2name;
   TString p3name;
   TString othername;
-  if (category == "top") {
-    p2name = "tp2";
-    p3name = "tp3";
-    othername = "other";
-  }
-  if (category == "w") {
-    p2name = "tp2";
-    p3name = "tp3";
-    othername ="other";
-  }
+  if (category == "top") 
+    {
+      p2name = "tp2";
+      p3name = "tp3";
+      othername = "other";
+    }
+  if (category == "w")
+    {
+      p2name = "tp2";
+      p3name = "tp3";
+      othername ="other";
+    }
   
   // pass 
   TFile *f_p = TFile::Open((TString)inputname+"/"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root","READONLY");
@@ -98,7 +96,6 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   std::cout << "\n";
     
   std::cout << "tp3_xsec     lnN      1.05 - - -    1.05 - - - \n";
-  //std::cout << "wqq_xsec     lnN      - 1.05 - -    - 1.05 - - \n";
   std::cout << "tp2_xsec     lnN      - 1.05 - -    - 1.05 - - \n";
   std::cout << "tp1_xsec     lnN      - - 1.05 -    - - 1.05 - \n";
   std::cout << "other_xsec   lnU      - - - 2.00    - - - 2.00 \n";
@@ -109,7 +106,6 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
 
   std::cout << "\n";
 
-  
   std::cout << "tp3jms       shapeU    1 - - -     1 - - - \n";  
   std::cout << "vqqjms       shapeU    - 1 - -     - 1 - - \n";
   std::cout << "tp1jms       shapeU    - - 1 -     - - 1 - \n";
@@ -127,9 +123,7 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   std::cout << "lhescalemuf shape    1 1 1 1     1 1 1 1 \n";
   std::cout << "lhescalemur shape    1 1 1 1     1 1 1 1 \n";
   //std::cout << "lhepdf      shape    1 1 1 1     1 1 1 1 \n";
-  
-  //  std::cout << "herwig         shape    1 1 1 -     1 1 1 -\n";
-
+    
   std::cout << "norm_top    rateParam    pass    " << p3name << "      1   [0.,10.]\n";
   std::cout << "norm_top    rateParam    fail    " << p3name << "      1   [0.,10.]\n";
   std::cout << "norm_top    rateParam    pass    " << p2name << "      1   [0.,10.]\n";
@@ -141,7 +135,5 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   std::cout << "\n";
 
   std::cout << "*  autoMCStats  0\n";
-  //std::cout << "dummy    lnN    1.001  1.001  1.001  1.001  1.001  1.001\n";
-
 }
 
