@@ -362,14 +362,14 @@ void makeDataMCPlotFromCombine(TString path2file, TString era, TString category,
 	{ 
 	  std::cout << " sample = " << sample << " , category = " << category << "\n";
 	  processes.push_back("tp3"); processes.push_back("tp2"); processes.push_back("tp1"); processes.push_back("other"); processes.push_back("total");
-	  colors.push_back(conf::tp3.color); colors.push_back(conf::tp2.color); colors.push_back(conf::tp1.color); colors.push_back(conf::other.color); colors.push_back(602);
+	  colors.push_back(conf::tp3.color); colors.push_back(conf::tp2.color); colors.push_back(conf::tp1.color); colors.push_back(conf::other.color); colors.push_back(8);
 	  legends.push_back(conf::tp3.legend_name); legends.push_back(conf::tp2.legend_name); legends.push_back(conf::tp1.legend_name); legends.push_back(conf::other.legend_name); legends.push_back("Total SM");
 	}
       else if (category == "top")
 	{ 
 	  std::cout << " sample = " << sample << " , category = " << category << "\n";
 	  processes.push_back("tp3"); processes.push_back("tp2"); processes.push_back("tp1"); processes.push_back("other"); processes.push_back("total");
-	  colors.push_back(conf::tp3.color); colors.push_back(conf::tp2.color); colors.push_back(conf::tp1.color); colors.push_back(conf::other.color); colors.push_back(602);
+	  colors.push_back(conf::tp3.color); colors.push_back(conf::tp2.color); colors.push_back(conf::tp1.color); colors.push_back(conf::other.color); colors.push_back(8);
 	  legends.push_back(conf::tp3.legend_name); legends.push_back(conf::tp2.legend_name); legends.push_back(conf::tp1.legend_name); legends.push_back(conf::other.legend_name); legends.push_back("Total SM");
 	}
     }

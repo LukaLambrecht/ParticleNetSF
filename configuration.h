@@ -125,7 +125,7 @@ namespace conf {
     
     tp2.name        = "tp2";
     tp2.legend_name = "W-merged";
-    tp2.color       = 590;
+    tp2.color       = 7;
     
     tp3.name        = "tp3";
     tp3.legend_name = "Top-merged";
