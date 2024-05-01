@@ -134,7 +134,6 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
 		}
 	      else 
 		{
-		  
 		  TString nameSyst = syst[is];
 		  if ( (syst[is].Contains("jms")) || (syst[is].Contains("jmr")) ) 
 		    {
@@ -153,7 +152,6 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
 		      h_down_->Add(h_down__); 
 		      h_down_->SetName(processes_out[count]+"_"+nameSyst+"Down"); h_down_->SetLineColor(colors[count]); h_down_->SetFillColor(colors[count]);
 		      if (category[ic] == "pass") { hist_out_p.push_back(h_down_); } else { hist_out_f.push_back(h_down_); }
-		      
 		    }
 		  else if (ip<=8)
 		    {
