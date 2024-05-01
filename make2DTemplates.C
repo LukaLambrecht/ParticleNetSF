@@ -226,7 +226,6 @@ TH2D *create2Dhisto(TString sample, TTree *tree,TString intLumi,TString cuts,TSt
 
   TString genWgt = "xsecWeight*genWeight";
   
-  TString qcdWgt    = "1.";
   TString ttWgt     = "1."; if (sample.Contains("tt1l")) { ttWgt = "topptWeight"; };
 
   conf::configuration(sample);
@@ -235,9 +234,7 @@ TH2D *create2Dhisto(TString sample, TTree *tree,TString intLumi,TString cuts,TSt
   if (data) { cut ="("+cuts+")"; } 
   else 
     {
-      if (name.Contains("qcd"))           { cut = "("+intLumi+"*"+puWgt+"*"+genWgt+"*"+qcdWgt+")*("+cuts+")"; }
-      else if (name.Contains("tt"))       { cut = "("+intLumi+"*"+puWgt+"*"+genWgt+"*"+ttWgt+")*("+cuts+")"; }
-      else if (name.Contains("sm"))       { cut = "("+intLumi+"*"+puWgt+"*"+genWgt+")*("+cuts+")"; }
+      if (name.Contains("tt"))       { cut = "("+intLumi+"*"+puWgt+"*"+genWgt+"*"+ttWgt+")*("+cuts+")"; }
       else                                { cut = "("+intLumi+"*"+puWgt+"*"+genWgt+")*("+cuts+")"; }
     }
   
@@ -246,14 +243,26 @@ TH2D *create2Dhisto(TString sample, TTree *tree,TString intLumi,TString cuts,TSt
   std::cout << "Cut = " << cut << "\n";
   std::cout << "\n";
 
-  
   TH2D *hTemp = new TH2D(name,name,binsX,minX,maxX,binsY,minY,maxY);
 
   TString massScaleVal_ = "1.05"; if (name.Contains("Down")) { massScaleVal_ = "0.95"; }
   TString massSmearVal_ = "0.10"; if (name.Contains("Down")) { massSmearVal_ = "0."; }
-  if (name.Contains("jms")) { std::cout << tree->Project(name,branchY+":(massScale("+branchX+","+massScaleVal_+"))",cut); }
-  else if (name.Contains("jmr")) { std::cout << " In jmr \n"; tree->Project(name,branchY+":(massSmear("+branchX+",luminosityBlock,event,"+massSmearVal_+"))",cut); }
-  else                           { std::cout << " In else \n"; tree->Project(name,branchY+":"+branchX,cut); }
+  
+  if (name.Contains("jms")) 
+    { 
+      std::cout << " In jms \n";
+      tree->Project(name,branchY+":(massScale("+branchX+","+massScaleVal_+"))",cut);
+    }
+  else if (name.Contains("jmr")) 
+    { 
+      std::cout << " In jmr \n";
+      tree->Project(name,branchY+":(massSmear("+branchX+",luminosityBlock,event,"+massSmearVal_+"))",cut); 
+    }
+  else
+    {
+      std::cout << " In else \n"; 
+      tree->Project(name,branchY+":"+branchX,cut); 
+    }
   
   for (unsigned int i0x=0; i0x<hTemp->GetNbinsX(); ++i0x) 
     {

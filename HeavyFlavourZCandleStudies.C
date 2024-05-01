@@ -87,8 +87,7 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   std::vector<TString> processes_in = conf::processes_in;
 
   std::vector<TString> processes_out;
-  if (sample == "top") { processes_out.push_back("tp3"); processes_out.push_back("tp2"); processes_out.push_back("tp1"); processes_out.push_back("other"); }
-  if (sample == "w")   { processes_out.push_back("tp3"); processes_out.push_back("tp2"); processes_out.push_back("tp1"); processes_out.push_back("other"); }
+  processes_out.push_back("tp3"); processes_out.push_back("tp2"); processes_out.push_back("tp1"); processes_out.push_back("other"); 
   std::vector<int>     colors    = {conf::tp3.color,conf::tp2.color,conf::tp1.color,conf::other.color};
   std::vector<TString> legends   = {conf::tp3.legend_name,conf::tp2.legend_name,conf::tp1.legend_name,conf::other.legend_name};
 
@@ -358,20 +357,10 @@ void makeDataMCPlotFromCombine(TString path2file, TString era, TString category,
   std::vector<TString> legends;   legends.clear();
   if (sample == "tt1l") 
     {
-      if (category == "w") 
-	{ 
-	  std::cout << " sample = " << sample << " , category = " << category << "\n";
-	  processes.push_back("tp3"); processes.push_back("tp2"); processes.push_back("tp1"); processes.push_back("other"); processes.push_back("total");
-	  colors.push_back(conf::tp3.color); colors.push_back(conf::tp2.color); colors.push_back(conf::tp1.color); colors.push_back(conf::other.color); colors.push_back(8);
-	  legends.push_back(conf::tp3.legend_name); legends.push_back(conf::tp2.legend_name); legends.push_back(conf::tp1.legend_name); legends.push_back(conf::other.legend_name); legends.push_back("Total SM");
-	}
-      else if (category == "top")
-	{ 
-	  std::cout << " sample = " << sample << " , category = " << category << "\n";
-	  processes.push_back("tp3"); processes.push_back("tp2"); processes.push_back("tp1"); processes.push_back("other"); processes.push_back("total");
-	  colors.push_back(conf::tp3.color); colors.push_back(conf::tp2.color); colors.push_back(conf::tp1.color); colors.push_back(conf::other.color); colors.push_back(8);
-	  legends.push_back(conf::tp3.legend_name); legends.push_back(conf::tp2.legend_name); legends.push_back(conf::tp1.legend_name); legends.push_back(conf::other.legend_name); legends.push_back("Total SM");
-	}
+      std::cout << " sample = " << sample << " , category = " << category << "\n";
+      processes.push_back("tp3"); processes.push_back("tp2"); processes.push_back("tp1"); processes.push_back("other"); processes.push_back("total");
+      colors.push_back(conf::tp3.color); colors.push_back(conf::tp2.color); colors.push_back(conf::tp1.color); colors.push_back(conf::other.color); colors.push_back(8);
+      legends.push_back(conf::tp3.legend_name); legends.push_back(conf::tp2.legend_name); legends.push_back(conf::tp1.legend_name); legends.push_back(conf::other.legend_name); legends.push_back("Total SM");
     }
 
   TString extra_ = "/";
@@ -421,20 +410,6 @@ void makeDataMCPlotFromCombine(TString path2file, TString era, TString category,
   leg->SetFillColor(0);
   leg->SetLineWidth(0);
   for (unsigned int i0=0; i0<h_prefit.size(); ++i0) { leg->AddEntry(h_postfit[i0],legends[i0],"L"); }
-
-  TLegend* legfit = new TLegend(0.4,0.7,0.65,0.86);
-  legfit->SetFillStyle(0);
-  legfit->SetFillColor(0);
-  legfit->SetLineWidth(0);
-  legfit->AddEntry(h_prefit[numOfMC-1],"Pre-fit","L");
-  legfit->AddEntry(h_postfit[numOfMC-1],"Post-fit","L");
-
-  TLegend* legfitr = new TLegend(0.35,0.80,0.55,0.93);
-  legfitr->SetFillStyle(0);
-  legfitr->SetFillColor(0);
-  legfitr->SetLineWidth(0);
-  legfitr->AddEntry(h_r_prefit,"Pre-fit","L");
-  legfitr->AddEntry(h_r_postfit,"Post-fit","L");
 
   TPaveText *pt_cms = new TPaveText(0.11,0.77,0.4,0.9,"NDC");
   pt_cms->SetFillStyle(0);
