@@ -36,6 +36,7 @@ namespace conf {
   TString path_2016;
   TString path_2017;
   TString path_2018;
+  TString path_2022;
 
   TString jetCone;
 
@@ -47,11 +48,12 @@ namespace conf {
    
     if (sample == "tt1l") 
       {
-	path_2016 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2016/from_Huilin/20211212_NanoAODv9_ak8_muon_2015/";
-	//path_2016 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2016/from_Huilin/20211212_NanoAODv9_ak8_muon_2016/";
-	path_2017 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2017/from_Huilin/20211212_NanoAODv9_ak8_muon_2017/";
-	path_2018 = "/eos/uscms/store/user/pakontax/ParticleNET_UL_NanoV9_For_Copy/2018/from_Huilin/20211212_NanoAODv9_ak8_muon_2018/";
-      
+	path_2016 = "/eos/cms/store/group/phys_jetmet/lpaizano/Run2/2015/";
+	//path_2016 = "/eos/cms/store/group/phys_jetmet/lpaizano/Run2/2016/";
+	path_2017 = "/eos/cms/store/group/phys_jetmet/lpaizano/Run2/2017/";
+	path_2018 = "/eos/cms/store/group/phys_jetmet/lpaizano/Run2/2018/";
+	path_2022 = "/eos/cms/store/group/phys_jetmet/lpaizano/Run3/2022/";
+	
 	jetCone    = "ak8";
 	jet_prefix = "fj_1_";
       

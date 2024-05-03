@@ -61,6 +61,7 @@ void makeTemplatesTop(TString path2file, TString era, TString cat, TString wpmin
   //if (era == "2016") { path = conf::path_2016; intLumi= 16.81;  }
   if (era == "2017") { path = conf::path_2017; intLumi= 41.53; }
   if (era == "2018") { path = conf::path_2018; intLumi= 59.74; }
+  if (era == "2022") { path = conf::path_2022; intLumi= 7.98; }
   ostringstream tmpLumi; tmpLumi << intLumi; TString lumi = tmpLumi.str();
 
 
