@@ -4,7 +4,9 @@ link: https://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/
 
 voms-proxy-init --voms cms
 
-setenv SCRAM_ARCH slc7_amd64_gcc700   (export SCRAM_ARCH=slc7_amd64_gcc700)
+cmssw-el7 (on lxplus)
+
+setenv SCRAM_ARCH slc7_amd64_gcc700 (on lpc)
 
 cmsrel CMSSW_10_2_13
 
