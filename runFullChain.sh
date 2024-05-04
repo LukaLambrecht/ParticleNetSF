@@ -23,7 +23,13 @@ if [ ${object} == "T" ];
 then
     mist_rates=("1p0" "0p5" "0p1") 
     #mist_rates=("1p0")
-    if [ ${year} == 2018 ];
+    if [ ${year} == 2022 ];
+    then
+      if [ ${version} == "Nominal" ];
+      then
+	  WPs_FullVer_vs_QCD=(["1p0"]="0.60" ["0p5"]="0.80" ["0p1"]="0.90") #0: 1p0, 1: 0p5, 2: 0p1 #2015
+      fi
+    elif [ ${year} == 2018 ];
     then
       if [ ${version} == "Nominal" ]; 
       then 
@@ -44,8 +50,19 @@ then
       fi    
     fi
 elif [ ${object} == "W" ];
-then   
-    if [ ${year} == 2018 ];
+then
+    if [ ${year} == 2022 ];
+    then
+      if [ ${version} == "Nominal" ];
+      then
+        mist_rates=("5p0" "1p0" "0p5")
+        WPs_FullVer_vs_QCD=(["5p0"]="0.60" ["1p0"]="0.80" ["0p5"]="0.90") #0: 5p0, 1: 1p0, 2: 0p5
+      elif [ ${version} == "MD" ];     
+      then
+        mist_rates=("2p5" "1p0" "0p5")
+        WPs_FullVer_vs_QCD=(["2p5"]="0.60" ["1p0"]="0.80" ["0p5"]="0.90") #0: 2p5, 1: 1p0, 2: 0p5
+      fi 
+    elif [ ${year} == 2018 ];
     then
       if [ ${version} == "Nominal" ];
       then
