@@ -80,7 +80,7 @@ root [1] makeDatacards("2017","tt1l","bb","0.90","1.")
 ```
 
 
-## Do the fit:
+### Do the fit:
 
 ```
 root [0] .L makeFits.C
@@ -88,3 +88,32 @@ root [1] makeFits("2017","bb","0.90","1.","tt1l")
 ```
 
  or “zqq” or “tt1L” to fit only specific samples
+
+## Making modifications
+This paragraph lists the files and items that should be modified for some common changes.
+This is likely to be updated (for example for running on 2016 pre-VFP and post-VFP without having to change elements in the source code),
+but for now these are the steps to follow.
+
+To change the tagger being used:
+- Use the correct command line arguments to `runFullChain.sh`. Valid choices are:
+  - `Top Nominal`
+  - `W Nominal`
+  - `W MD`.
+- Modify `configuration.h`. In particular:
+  - category
+  - algo
+  - score_def
+  - binsY, minY, maxY
+  - pT range
+- Modify `makeFits.C`, in particular the `text2workspace` command. 
+
+To switch 2016 between preVFP and postVFP:
+- Modify `configuration.h`, in particular the `path_2016` variable.
+- Modify `runFullChain.sh`, in particular the `WPs_FullVer_vs_QCD` variable.
+- Modify `make2DTemplates.C`, in particular the integrated luminosity in the function `makeTemplatesTop`.
+
+To select different working points of the tagger:
+- Modify `runFullChain.sh`, in particular the `WPs_FullVer_vs_QCD` variable.
+
+To use different selections or matching criteria:
+- Modify `make2DTemplates.C`, in particular the definition of the cuts and criteria in the function `makeTemplatesTop`.
