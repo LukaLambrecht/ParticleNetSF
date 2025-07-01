@@ -1,9 +1,16 @@
 #!/bin/bash 
 
+# Run the full scale factor measurement chain
+
+# read command-line args
 object=$1
 year=$2
 version=$3
 
+# declare variables
+# note:
+#   - option -a means array (similar to python lists)
+#   - option -A means associative array (similar to python dicts)
 declare -a WPs_TopvsQCD
 declare -a WPs_WvsQCD
 declare -a WPs_Wvs_QCD_MD
@@ -11,6 +18,7 @@ declare -A WPs_FullVer_vs_QCD
 declare -A WP_MDVer_vs_QCD
 declare -a mist_rates
 
+# define category
 if [ ${object} == "T" ];
 then
     category="top"
@@ -19,10 +27,10 @@ then
     category="w"
 fi
 
+# define working points for top category
 if [ ${object} == "T" ];
 then
     mist_rates=("1p0" "0p5" "0p1") 
-    #mist_rates=("1p0")
     if [ ${year} == 2022 ];
     then
       if [ ${version} == "Nominal" ];
@@ -49,6 +57,8 @@ then
         #WPs_FullVer_vs_QCD=(["1p0"]="0.495" ["0p5"]="0.733" ["0p1"]="0.958") #0: 1p0, 1: 0p5, 2: 0p1 #2016
       fi    
     fi
+
+# define working points for W category
 elif [ ${object} == "W" ];
 then
     if [ ${year} == 2022 ];
@@ -100,20 +110,23 @@ then
     fi
 fi 
 
+# loop over eras and mistag rates
 for era in ${year}
 do
    for mistRate in "${mist_rates[@]}";
    do
+      # set wpmin
+      # todo: what is this?
       unset wpmin
-
       wpmin="${WPs_FullVer_vs_QCD[${mistRate}]}"
-          
-   
+      
+      # make the commands to run
       cmd_templates2d=$(echo 'make2DTemplates.C("tt1l","'${era}'","'${wpmin}'","1.00")')
       cmd_templates1d=$(echo 'HeavyFlavourZCandleStudies.C("'${era}'","tt1l","'${category}'","'${wpmin}'","1.00",false,"pass")')
       cmd_datacards=$(echo 'makeDatacards.C("'${era}'","tt1l","'${category}'","'${wpmin}'","1.00")')
       cmd_makefits=$(echo 'makeFits.C("'${era}'","'${category}'","'${wpmin}'","1.00","tt1l")')
      
+      # run the commands
       root -l -q ${cmd_templates2d}
       root -l -q ${cmd_templates1d}
       root -l -q ${cmd_datacards}
