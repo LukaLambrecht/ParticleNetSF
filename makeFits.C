@@ -10,7 +10,6 @@
 
 // declare helper functions
 void makeOneFit(std::string era, std::string category, std::string wpmin, std::string wpmax, std::string name, std::string name1);
-void makeOneFitTop(std::string era, std::string category, std::string wpmin, std::string wpmax, std::string name, std::string name1);
 void makeCombFit(std::string era, std::string category, std::string wpmin, std::string wpmax, std::string name, std::string name1);
 
 
@@ -27,7 +26,7 @@ void makeFits(std::string era, std::string category, std::string wpmin, std::str
   if(sample=="tt1l"){
       for (int i0=0; i0<name.size(); ++i0){
           std::cout << "Running makeFits on pt bin " << name[i0] << std::endl; 
-	      makeOneFitTop(era,category,wpmin,wpmax,(std::string)name[i0],(std::string)conf::algo);
+	      makeOneFit(era,category,wpmin,wpmax,(std::string)name[i0],(std::string)conf::algo);
 	  } 
   }
   else{
@@ -37,12 +36,18 @@ void makeFits(std::string era, std::string category, std::string wpmin, std::str
 }
 
 
-void makeOneFitTop(std::string era, std::string category, std::string wpmin, std::string wpmax, std::string name, std::string name1) {
+void makeOneFit(std::string era, std::string category, std::string wpmin, std::string wpmax, std::string name, std::string name1) {
+
+  // check category
+  std::string pos;
+  if( category=="top" ){ pos = "tp3,tp2,tp1,other"; }
+  else if( category=="w" ){ pos = "tp2,tp3,tp1,other"; }
+  else{
+      std::string msg = "ERROR in makeOneFit: category " + category + " not recognized.";
+      throw std::runtime_error(msg);
+  }
 
   // make text2workspace command
-  // todo: propagate the type of measurement from upstream, so that this hard-coded switch is not needed
-  //std::string pos = "tp3,tp2,tp1,other"; // for top-tag SFs
-  std::string pos = "tp2,tp3,tp1,other"; // for W-tag SFs
   std::string txt2workspace = "text2workspace.py -m 125 -P HiggsAnalysis.CombinedLimit.TagAndProbeExtended:tagAndProbe "
       + name1 + "_sf/fitdir/datacard_" + name1 + "_tt1l_" + category + "_" + wpmin + "to" + wpmax + "_" + era + "_" + name + ".txt"
       + " --PO categories=" + pos;

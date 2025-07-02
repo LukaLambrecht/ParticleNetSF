@@ -105,7 +105,6 @@ To change the tagger being used:
 - Modify `configuration.h`. In particular:
   - algo
   - score_def
-- Modify `makeFits.C`, in particular the `text2workspace` command.
 
 To modify the binning in pt
 - Modify `configuration.h`. In particular:
