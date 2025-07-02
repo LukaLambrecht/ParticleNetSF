@@ -23,7 +23,6 @@ namespace conf {
   TString brY; int binsY; float minY, maxY;
   TString algo;
   TString score_def; 
-  TString category;
   
   std::vector<TString> name; 
   std::vector<double>  ptmin; 
