@@ -43,51 +43,54 @@ cp TagAndProbeExtended.py $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/python
 
 ## Input files
 To do: a discussion on suitable input files: where to find them or how to produce them.
-For now, just use the ones prepared here (on `lxplus`): `/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2018/`
+
+For now, just use the ones prepared here (on `lxplus`): `/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_<year>/`.
 
 ## How to run
 
 ### Full chain
-This command runs the full chain, from input files to scale factors, in one go:
-```
-./runFullChain.sh  [T|W]  [2016|2017|2018]  ["Nominal"|"MD"]
-```
+Use the script `runFullChain.py` to the full chain, from input files to scale factors, in one go.
+Use `python3 runFullChain.py -h` to see a list of all available options and a short explanation for each of them.
+The required arguments are:
+- `-c / --category`: define which tagger to use. Choose from `top` or `W`.
+- `-v / --version`: define which version of the tagger to use. Choose from `nominal` or `MD` (mass-decorrelated).
+- `-y / --year`: define which year to run on. Can also be multiple years separated by spaces.
 
 Notes:
-- Small tweaks might be needed inside the "configuration.h" and "makeFits.C" according to the object/version selected for the SF extraction.
+- Apart from providing command line arguments, small tweaks might be needed inside the "configuration.h" and "makeFits.C",
+  according to the category / version selected for the SF extraction (see also further below).
+  This is in the process of being streamlined, so that no additional tweaks are needed, but not yet completed.
 
-
-### Create 2D histograms pT(jet) vs m(jet) from the trees
+### Create 2D histograms
 To speed up the process, steps can be run separately instead of in one go.
+The first step consists of making 2D histograms (as a function of m(jet) and pt(jet)) from the trees.
 ```
 root [0] .L make2DTemplates.C
-root [1] mainfunction("tt1l","2017","0.90","1.”)
+root [1] make2DTemplates("<year>", "tt1l", "<category>", "<minimum score>", "<maximum score>”)
 ```
 
-### Create the 1D templates:
-
+### Create 1D histograms:
+Next, the 2D histograms are projected onto 1D histograms in given bins of pt.
 ```
-root [0] .L HeavyFlavourZCandleStudies.C
-root [1] HeavyFlavourZCandleStudies("2017","tt1l","bb","0.90","1.",false,"pass")
+root [0] .L make1DTemplates.C
+root [1] make1DTemplates("<year>", "tt1l", "<category>", "<minimum score>", "<maximum score>", false, "", "")
 ```
+Where the last three arguments are for prefit and two dummy arguments that are not used (in prefit mode), respectively.
+The version in postfit mode is called automatically from `makeFits.C` after doing the fit (see below).
 
 ### Create the datacards:
-The datacards will be produced under particlenet_sf/fitdir (if one keeps the default naming/settings)
-
+Next, the datacards will be produced.
 ```
 root [0] .L makeDatacards.C
-root [1] makeDatacards("2017","tt1l","bb","0.90","1.")
+root [1] makeDatacards("<year>", "tt1l", "<category>", "<minimum score>", "<maximum score>")
 ```
-
 
 ### Do the fit:
-
+Finally, the fits can be performed.
 ```
 root [0] .L makeFits.C
-root [1] makeFits("2017","bb","0.90","1.","tt1l")
+root [1] makeFits("<year>", "<category>", "minimum_score", "maximum_score", "tt1l")
 ```
-
- or “zqq” or “tt1L” to fit only specific samples
 
 ## Making modifications
 This paragraph lists the files and items that should be modified for some common changes.
@@ -95,25 +98,23 @@ This is likely to be updated (for example for running on 2016 pre-VFP and post-V
 but for now these are the steps to follow.
 
 To change the tagger being used:
-- Use the correct command line arguments to `runFullChain.sh`. Valid choices are:
-  - `Top Nominal`
-  - `W Nominal`
+- Use the correct command line arguments to `runFullChain.py`. Valid choices are:
+  - `top nominal`
+  - `W nominal`
   - `W MD`.
 - Modify `configuration.h`. In particular:
-  - category
   - algo
   - score_def
-  - binsY, minY, maxY
-  - pT range
-- Modify `makeFits.C`, in particular the `text2workspace` command. 
+- Modify `makeFits.C`, in particular the `text2workspace` command.
 
-To switch 2016 between preVFP and postVFP:
-- Modify `configuration.h`, in particular the `path_2016` variable.
-- Modify `runFullChain.sh`, in particular the `WPs_FullVer_vs_QCD` variable.
-- Modify `make2DTemplates.C`, in particular the integrated luminosity in the function `makeTemplatesTop`.
+To modify the binning in pt
+- Modify `configuration.h`. In particular:
+  - binsY, minY, maxY (this is used for producing the 2D histograms)
+  - pT range (this is used for projecting the 1D histograms)
 
 To select different working points of the tagger:
-- Modify `runFullChain.sh`, in particular the `WPs_FullVer_vs_QCD` variable.
+- Modify the `json` files in the `wps` folder, or create new ones
+  (and provide them as command line argument when running `runFullChain.py`)
 
 To use different selections or matching criteria:
 - Modify `make2DTemplates.C`, in particular the definition of the cuts and criteria in the function `makeTemplatesTop`.
