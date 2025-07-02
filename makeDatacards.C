@@ -1,50 +1,69 @@
+// Make datacards
+
+
+// imports
 #include <string>
 #include "configuration.h"
 
-void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TString wpmax,TString name, TString sample, TString era);
 
-void makeDatacards(TString era, TString sample, TString category, TString wpmin, TString wpmax) {
+// declare helper functions
+void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TString wpmax, TString name, TString sample, TString era);
+
+
+// main function
+void makeDatacards(TString era, TString sample, TString category, TString wpmin, TString wpmax){
+
+  // make the configuration for this sample
   conf::configuration(sample);
-
   std::vector<TString> name  = conf::name;
-  if(sample=="tt1l") 
-    {
-      for (int i0=0; i0<name.size(); ++i0) 
-	{
-	  makeOneDatacardTop(conf::algo+"_sf",category,wpmin,wpmax,name[i0],sample,era);
-	}
-    }
+
+  // define what to do based on sample
+  // note: this is a relic from earlier development (?),
+  //       in practice the sample is always 'tt1l'.
+  if(sample=="tt1l"){
+      for (int i0=0; i0<name.size(); ++i0){
+          std::cout << "Running makeDatacards on pt bin " << name[i0] << std::endl;
+	      makeOneDatacardTop(conf::algo+"_sf", category, wpmin, wpmax, name[i0], sample, era);
+	  }
+  }
+  else{
+      TString msg = "Sample " + sample + " not recognized.";
+      throw std::runtime_error(msg);
+  }
 }
 
 
 void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TString wpmax, TString name_, TString sample, TString era) {
+  // Make a single datacard
+  
+  // make the configuration for this sample
   conf::configuration(sample);
 
-  std::cout << "makeData card : " << name_ << "\n"; 
-
+  // set name and label
   TString label0;
   TString name = (TString)name_;
   TString inputname_ = (TString)inputname;
-  if (inputname_.Contains("particlenetmd"))                                                      { label0 = "particlenetmd"; }
-  if (inputname_.Contains("particlenet_"))                                                        { label0 = "particlenet"; }
+  if (inputname_.Contains("particlenetmd")) { label0 = "particlenetmd"; }
+  if (inputname_.Contains("particlenet_")) { label0 = "particlenet"; }
   
-  std::cout << label0 << "\n";
-  
+  // make output directory
   const int dir_err = system("mkdir -p ./"+inputname_+"/fitdir/");
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); }
 
+  // initialize the datacard
   std::ofstream out("./"+inputname_+"/fitdir/datacard_"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".txt");
   std::streambuf *coutbuf = std::cout.rdbuf();
   std::cout.rdbuf(out.rdbuf());
 
-  // pass 
+  // get the histograms for pass 
   TFile *f_p = TFile::Open((TString)inputname+"/"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root","READONLY");
   TH1D  *h_obs_p    = (TH1D*)f_p->Get("data_obs"); 
   TH1D  *h_top_p1_p = (TH1D*)f_p->Get("tp1");
   TH1D  *h_top_p2_p = (TH1D*)f_p->Get("tp2");
   TH1D  *h_top_p3_p = (TH1D*)f_p->Get("tp3");
   TH1D  *h_other_p  = (TH1D*)f_p->Get("other");
-  // fail
+  
+  // get the histograms for fail
   TFile *f_f = TFile::Open((TString)inputname+"/"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_f.root","READONLY");
   TH1D  *h_obs_f    = (TH1D*)f_f->Get("data_obs");   
   TH1D  *h_top_p1_f = (TH1D*)f_f->Get("tp1");
@@ -114,4 +133,3 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
 
   std::cout << "*  autoMCStats  0\n";
 }
-

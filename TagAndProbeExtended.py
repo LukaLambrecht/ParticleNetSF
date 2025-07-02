@@ -1,3 +1,7 @@
+# Implementation of the physics model for Combine
+# for this tag-and-probe measurement.
+
+
 from HiggsAnalysis.CombinedLimit.PhysicsModel import PhysicsModel
 
 
