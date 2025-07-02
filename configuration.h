@@ -21,7 +21,6 @@ namespace conf {
   
   TString brX; int binsX; float minX, maxX;
   TString brY; int binsY; float minY, maxY;
-  TString algo;
   TString score_def; 
   
   std::vector<TString> name; 
@@ -108,14 +107,14 @@ namespace conf {
 	
 	// list of systematic uncertainties
 	syst.push_back("_"); // this is for nominal
-	syst.push_back("pu"); 
-	syst.push_back("jes"); 
-	syst.push_back("jer");
-	syst.push_back("met"); 
-	syst.push_back("jms");
-	syst.push_back("jmr");
-	syst.push_back("lhescalemuf");
-	syst.push_back("lhescalemur");
+	//syst.push_back("pu"); 
+	//syst.push_back("jes"); 
+	//syst.push_back("jer");
+	//syst.push_back("met"); 
+	//syst.push_back("jms");
+	//syst.push_back("jmr");
+	//syst.push_back("lhescalemuf");
+	//syst.push_back("lhescalemur");
 	//syst.push_back("lhepdf");
     
     } // end of if sample == 'tt1l'
@@ -125,8 +124,6 @@ namespace conf {
     //       as a command-line argumgent to runFullChain.py, leading to bugs.
     //       better to remove this setting from the configuration,
     //       and consistently use the command-line argument everywhere.
-    //algo      = "particlenet"; // nominal ParticleNet
-    algo      = "particlenetmd"; // mass-decorrelated ParticleNet
     score_def = "fj_1_ParticleNetMD_XccVsQCD";
 
     // binning

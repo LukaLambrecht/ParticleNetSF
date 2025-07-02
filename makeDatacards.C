@@ -7,11 +7,10 @@
 
 
 // declare helper functions
-void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TString wpmax, TString name, TString sample, TString era);
-
+void makeOneDatacard(TString inputname, TString wpmin, TString wpmax, TString name, TString sample, TString era);
 
 // main function
-void makeDatacards(TString era, TString sample, TString category, TString wpmin, TString wpmax){
+void makeDatacards(TString era, TString sample, TString wpmin, TString wpmax){
 
   // make the configuration for this sample
   conf::configuration(sample);
@@ -23,7 +22,7 @@ void makeDatacards(TString era, TString sample, TString category, TString wpmin,
   if(sample=="tt1l"){
       for (int i0=0; i0<name.size(); ++i0){
           std::cout << "Running makeDatacards on pt bin " << name[i0] << std::endl;
-	      makeOneDatacardTop(conf::algo+"_sf", category, wpmin, wpmax, name[i0], sample, era);
+	      makeOneDatacard("templates1D", wpmin, wpmax, name[i0], sample, era);
 	  }
   }
   else{
@@ -33,30 +32,28 @@ void makeDatacards(TString era, TString sample, TString category, TString wpmin,
 }
 
 
-void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TString wpmax, TString name_, TString sample, TString era) {
+void makeOneDatacard(TString inputname, TString wpmin, TString wpmax, TString name_, TString sample, TString era) {
   // Make a single datacard
   
   // make the configuration for this sample
   conf::configuration(sample);
 
   // set name and label
-  TString label0;
+  TString algolabel = "particlenet";
   TString name = (TString)name_;
   TString inputname_ = (TString)inputname;
-  if (inputname_.Contains("particlenetmd")) { label0 = "particlenetmd"; }
-  if (inputname_.Contains("particlenet_")) { label0 = "particlenet"; }
   
   // make output directory
   const int dir_err = system("mkdir -p ./"+inputname_+"/fitdir/");
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); }
 
   // initialize the datacard
-  std::ofstream out("./"+inputname_+"/fitdir/datacard_"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".txt");
+  std::ofstream out("./"+inputname_+"/fitdir/datacard_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".txt");
   std::streambuf *coutbuf = std::cout.rdbuf();
   std::cout.rdbuf(out.rdbuf());
 
   // get the histograms for pass 
-  TFile *f_p = TFile::Open((TString)inputname+"/"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root","READONLY");
+  TFile *f_p = TFile::Open((TString)inputname+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root","READONLY");
   TH1D  *h_obs_p    = (TH1D*)f_p->Get("data_obs"); 
   TH1D  *h_top_p1_p = (TH1D*)f_p->Get("tp1");
   TH1D  *h_top_p2_p = (TH1D*)f_p->Get("tp2");
@@ -64,7 +61,7 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   TH1D  *h_other_p  = (TH1D*)f_p->Get("other");
   
   // get the histograms for fail
-  TFile *f_f = TFile::Open((TString)inputname+"/"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_f.root","READONLY");
+  TFile *f_f = TFile::Open((TString)inputname+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_f.root","READONLY");
   TH1D  *h_obs_f    = (TH1D*)f_f->Get("data_obs");   
   TH1D  *h_top_p1_f = (TH1D*)f_f->Get("tp1");
   TH1D  *h_top_p2_f = (TH1D*)f_f->Get("tp2");
@@ -76,8 +73,8 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   std::cout << "kmax *  number of nuisance parameters (sources of systematical uncertainties)\n";
   std::cout << "------------\n";
 
-  std::cout << "shapes  *  pass  " << (TString)inputname << "/"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_" << name << "_templates_p.root  $PROCESS $PROCESS_$SYSTEMATIC\n";
-  std::cout << "shapes  *  fail  " << (TString)inputname << "/"+label0+"_tt1l_"+category+"_"+wpmin+"to"+wpmax+"_"+era+"_" << name << "_templates_f.root  $PROCESS $PROCESS_$SYSTEMATIC\n";
+  std::cout << "shapes  *  pass  " << (TString)inputname << "/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_" << name << "_templates_p.root  $PROCESS $PROCESS_$SYSTEMATIC\n";
+  std::cout << "shapes  *  fail  " << (TString)inputname << "/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_" << name << "_templates_f.root  $PROCESS $PROCESS_$SYSTEMATIC\n";
   std::cout << "------------\n";
 
 
@@ -105,7 +102,7 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   
   std::cout << "\n";
 
-  std::cout << "tp3jms       shapeU    1 - - -     1 - - - \n";  
+  /*std::cout << "tp3jms       shapeU    1 - - -     1 - - - \n";  
   std::cout << "tp2jms       shapeU    - 1 - -     - 1 - - \n";
   std::cout << "tp1jms       shapeU    - - 1 -     - - 1 - \n";
   std::cout << "otherjms     shapeU    - - - 1     - - - 1 \n";
@@ -121,7 +118,7 @@ void makeOneDatacardTop(TString inputname, TString category, TString wpmin, TStr
   std::cout << "met         shape    1 1 1 1     1 1 1 1 \n";
   std::cout << "lhescalemuf shape    1 1 1 1     1 1 1 1 \n";
   std::cout << "lhescalemur shape    1 1 1 1     1 1 1 1 \n";
-  //std::cout << "lhepdf      shape    1 1 1 1     1 1 1 1 \n";
+  //std::cout << "lhepdf      shape    1 1 1 1     1 1 1 1 \n";*/
     
   std::cout << "norm_top    rateParam    pass    tp3      1   [0.,10.]\n";
   std::cout << "norm_top    rateParam    fail    tp3      1   [0.,10.]\n";

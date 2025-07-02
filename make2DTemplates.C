@@ -26,7 +26,7 @@ TH2D *create2Dhisto(TString sample, TTree *tree, TString intLumi, TString cuts,
         TString branchY, int binsY, float minY, float maxY,
         bool useLog, TString name, bool data);
 
-void makeTemplatesTop(TString path2file, TString era, TString cat, TString wpmin, TString wpmax,
+void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
         TString score="fj_1_ParticleNetMD_XbbVsQCD", TString ptmin="0", TString ptmax="9999", TString suffix="none");
 
 void makeMCHistosTop(TString name, TString path, std::vector<TString> processes, std::vector<TString> process_names,
@@ -47,7 +47,7 @@ double massSmear(double mass, unsigned long lumi, unsigned long event, double si
 
 
 // main function
-void make2DTemplates(TString era, TString sample, TString category, TString wpmin, TString wpmax) 
+void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax) 
 {
     // make the configuration for this sample
     conf::configuration(sample);
@@ -62,7 +62,7 @@ void make2DTemplates(TString era, TString sample, TString category, TString wpmi
         //       instead, the values are hard-coded here.
         TString ptmin = "200";
         TString ptmax = "1200";
-        makeTemplatesTop(sample, era, category, wpmin, wpmax, conf::score_def, ptmin, ptmax);    
+        makeTemplatesTop(sample, era, wpmin, wpmax, conf::score_def, ptmin, ptmax);    
     }
     else {
         TString msg = "Sample " + sample + " not recognized.";
@@ -70,7 +70,7 @@ void make2DTemplates(TString era, TString sample, TString category, TString wpmi
     }
 }
 
-void makeTemplatesTop(TString path2file, TString era, TString cat, TString wpmin, TString wpmax,
+void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
         TString score="fj_1_ParticleNetMD_XbbVsQCD", 
         TString ptmin="0==0",
         TString ptmax="0==0",
@@ -84,9 +84,9 @@ void makeTemplatesTop(TString path2file, TString era, TString cat, TString wpmin
   gStyle->SetPalette(1);
   TH1::SetDefaultSumw2(kTRUE);
 
-  // make the configuration for this file
+  // make the configuration for this sample
   // todo: figure out if this actually does anything
-  conf::configuration(path2file);
+  conf::configuration(sample);
 
   // get processes
   vector<TString> processes     = conf::processes;
@@ -109,11 +109,9 @@ void makeTemplatesTop(TString path2file, TString era, TString cat, TString wpmin
   std::cout << "Found following luminosity: " << intLumi << std::endl;
 
   // set directory to store the templates
+  // todo: maybe add score in output directory or file name to avoid confusion
   TString dirname1 = "templates2D";
-  TString name0;
-  if (score.Contains("ParticleNetMD"))      { name0 = "particlenetmd"; }
-  else if (score.Contains("ParticleNet"))   { name0 = "particlenet"; }
-  TString nameoutfile = conf::algo+"_tt1l_"+cat+"_"+wpmin+"to"+wpmax+"_"+era+"_"+ptmin+"to"+ptmax+"_templates";
+  TString nameoutfile = "particlenet_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+ptmin+"to"+ptmax+"_templates";
   
   // make output directory
   const int dir_err = system("mkdir -p ./"+dirname1);
@@ -146,10 +144,13 @@ void makeTemplatesTop(TString path2file, TString era, TString cat, TString wpmin
   cuts.push_back(c_p);
   cuts.push_back(c_f);
 
-  // define fit variables and axis ranges
+  // define axis ranges
   TString brX = conf::brX; int binsX = conf::binsX; float minX = conf::minX; float maxX = conf::maxX;
   TString brY = conf::brY; int binsY = conf::binsY; float minY = conf::minY; float maxY = conf::maxY;
-  TString name = path2file+"_"+name0+"_"+cat+"_"+wpmin+"to"+wpmax+"_"+era;
+
+  // define histogram name
+  // todo: maybe add score in histogram name to avoid confusion
+  TString name = sample+"_"+wpmin+"to"+wpmax+"_"+era;
   
   // make data histograms 
   TString datafile = path+"/data/singlemu_tree.root";
@@ -206,7 +207,6 @@ void makeTemplatesTop(TString path2file, TString era, TString cat, TString wpmin
   }
 
   fout->Close();
-  std::cout << "\n\n";
 }
 
 

@@ -81,9 +81,9 @@ for year in args.year:
       
       # make the commands to run
       cmds = []
-      cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{args.category.lower()}", "{wp}", "1.00")' )
-      cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{args.category.lower()}", "{wp}", "1.00", false, "", "")' )
-      cmds.append( f'makeDatacards.C("{year}", "tt1l", "{args.category.lower()}", "{wp}", "1.00")' )
+      cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{wp}", "1.00")' )
+      cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{wp}", "1.00", false, "")' )
+      cmds.append( f'makeDatacards.C("{year}", "tt1l", "{wp}", "1.00")' )
       cmds.append( f'makeFits.C("{year}", "{args.category.lower()}", "{wp}", "1.00", "tt1l")' )
      
       for idx, cmd in enumerate(cmds):
