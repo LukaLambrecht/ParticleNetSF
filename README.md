@@ -121,5 +121,11 @@ To select different working points of the tagger:
 - Modify the `json` files in the `wps` folder, or create new ones
   (and provide them as command line argument when running `runFullChain.py`)
 
+To enable or disable systematics:
+- Modify `configuration.h`, in particular the list of systematics.
+  This only affects which templates are being made, not directly which ones are taken into account in the fit.
+- Modify `makeDatacards.C` to switch systematics on or off for the fit.
+  Maybe to be improved later so no meddling with the source code is needed.
+
 To use different selections or matching criteria:
 - Modify `make2DTemplates.C`, in particular the definition of the cuts and criteria in the function `makeTemplatesTop`.
