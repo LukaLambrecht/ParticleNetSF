@@ -91,7 +91,7 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   conf::configuration(sample);
 
   // get processes
-  vector<TString> processes     = conf::processes;
+  vector<TString> processes = conf::processes;
   vector<TString> process_names = conf::process_names;
 
   // get path to files and luminosity
@@ -241,8 +241,12 @@ void makeMCHistosTop(TString name, TString path, std::vector<TString> processes,
     // get the tree
     TFile *f = TFile::Open(path+"/"+sys_dir+processes[i0]+"_tree.root", "READONLY");
     TTree *t = (TTree*)f->Get("Events");
-   
-    if ( (process_names[i0] == "tt") || (process_names[i0] == "st") || (process_names[i0] == "ttv")){
+
+    // decide whether to split in categories (for signal processes)
+    vector<TString> processes_splitting = conf::processes_splitting;
+    bool doSplit = (std::find(processes_splitting.begin(), processes_splitting.end(), process_names[i0])
+                    != processes_splitting.end());
+    if( doSplit ){
     // special case for signal processes: split in categories (for both pass and fail)
 	TH2D *h_p3_p = create2Dhisto(name,t,wgts,cuts[1]+"&&"+cuts[4],brX,binsX,minX,maxX,brY,binsY,minY,maxY,false,"h_"+name+"_"+process_names[i0]+"_p3_p",false); h2ds.push_back(h_p3_p); h2ds_names.push_back(process_names[i0]+"_p3_"+name_b+"_pass"); 
 	TH2D *h_p2_p = create2Dhisto(name,t,wgts,cuts[2]+"&&"+cuts[4],brX,binsX,minX,maxX,brY,binsY,minY,maxY,false,"h_"+name+"_"+process_names[i0]+"_p2_p",false); h2ds.push_back(h_p2_p); h2ds_names.push_back(process_names[i0]+"_p2_"+name_b+"_pass");

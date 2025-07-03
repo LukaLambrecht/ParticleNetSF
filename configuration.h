@@ -11,14 +11,6 @@
 
 namespace conf {
 
-  struct process {
-    
-    TString name;
-    TString legend_name;
-    int     color;
-    
-  } qcd, tp2, tp3, tp1, other;
-  
   TString brX; int binsX; float minX, maxX;
   TString brY; int binsY; float minY, maxY;
   TString score_def;
@@ -29,8 +21,13 @@ namespace conf {
   std::vector<double>  ptmax;
   std::vector<TString> processes;
   std::vector<TString> process_names;
+  std::vector<TString> processes_splitting;
+  std::map<TString, std::vector<TString>> processes_grouping;
   std::vector<TString> syst;
   std::vector<TString> processes_in;
+
+  std::map<TString, TString> legend_labels;
+  std::map<TString, int> colors;
 
   TString path_2016preVFP;
   TString path_2016postVFP;
@@ -81,6 +78,10 @@ namespace conf {
 	syst.clear();
 	
 	// define which processes to use for the 2D templates
+	// note: processes should contain the file name
+	//       (e.g. "ttbar-powheg" -> will look for ttbar-powheg.root).
+	// note: process_names should contain the given name of the process,
+	//       that will be used in all further steps.
 	processes.push_back("ttbar-powheg"); process_names.push_back("tt"); 
 	processes.push_back("singletop");    process_names.push_back("st");
 	processes.push_back("ttv");          process_names.push_back("ttv");
@@ -89,23 +90,20 @@ namespace conf {
 	//processes.push_back("qcd-mg");       process_names.push_back("qcd");
 	// (note: qcd seems to be absent from the input files, so cannot use)
 	
-	// define which processes to use for the 1D templates
-	// note: must correspond to (a subset of) the process_names from the previous step,
-	//       but with the signal processes (tt, st, ttv) split in categories.
-	processes_in.push_back("tt_p3");
-    processes_in.push_back("st_p3");
-    processes_in.push_back("ttv_p3");
-	processes_in.push_back("tt_p2");
-    processes_in.push_back("st_p2");
-    processes_in.push_back("ttv_p2"); 
-	processes_in.push_back("tt_p1");
-    processes_in.push_back("st_p1");
-    processes_in.push_back("ttv_p1");
-	processes_in.push_back("wll");
-    processes_in.push_back("vv");
-    //processes_in.push_back("qcd");
-    // (note: qcd seems to be absent from the input files, so cannot use)
+    // define which processes to split into p3, p2 and p1
+    processes_splitting.push_back("tt");
+    processes_splitting.push_back("st");
+    processes_splitting.push_back("ttv");
 	
+	// define which processes to use for the 1D templates
+	// note: the input process names must correspond to (a subset of)
+	//       the process_names from the previous step,
+	//       but with the signal processes (tt, st, ttv) split in categories.
+    processes_grouping["tp3"] = {"tt_p3", "st_p3", "ttv_p3"};
+    processes_grouping["tp2"] = {"tt_p2", "st_p2", "ttv_p2"};
+    processes_grouping["tp1"] = {"tt_p1", "st_p1", "ttv_p1"};
+    processes_grouping["other"] = {"wll", "vv"};
+
 	// list of systematic uncertainties
 	syst.push_back("_"); // this is for nominal
 	//syst.push_back("pu"); 
@@ -145,28 +143,17 @@ namespace conf {
     //ptnames.push_back("pt400to800"); ptmin.push_back(400.); ptmax.push_back(800.);
     ptnames.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
     
-    // =================== end of area to modify - tune ===================== //
+    legend_labels["tp3"] = "Top-merged";
+    legend_labels["tp2"] = "W-merged";
+    legend_labels["tp1"] = "Non-merged";
+    legend_labels["other"] = "Other";
 
-    qcd.name        = "qcd";
-    qcd.legend_name = "QCD";
-    qcd.color       = 92;
-    
-    tp2.name        = "tp2";
-    tp2.legend_name = "W-merged";
-    tp2.color       = 7;
-    
-    tp3.name        = "tp3";
-    tp3.legend_name = "Top-merged";
-    tp3.color       = 4;
-    
-    tp1.name        = "tp1";
-    tp1.legend_name = "Non-merged";
-    tp1.color       = 595;
-    
-    other.name        = "other";
-    other.legend_name = "Other";
-    other.color       = 6;
- 
+    colors["tp3"] = 4;
+    colors["tp2"] = 7;
+    colors["tp1"] = 595;
+    colors["other"] = 6;
+
+    // =================== end of area to modify - tune ===================== //
   }   
 
   TString convertFloatToTString(float input) {

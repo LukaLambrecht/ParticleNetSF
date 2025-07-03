@@ -36,7 +36,7 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
   conf::configuration(sample);
   std::vector<TString> ptnames = conf::ptnames;
   std::vector<double>  ptmin = conf::ptmin;
-  std::vector<double>  ptmax = conf::ptmax;    
+  std::vector<double>  ptmax = conf::ptmax; 
   
   // handle postfit case
   // (just read the output from combine and make the plot)
@@ -91,19 +91,15 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); }
   nameoutfile = nameoutfile+"_"+name;
 
-  // Data templates 
+  // get data templates 
   TH1D *h_data_p  = h1DHistoFrom2DTemplates(path2file,"data_obs_pass",name,ymin,ymax,1,true);
   TH1D *h_data_f  = h1DHistoFrom2DTemplates(path2file,"data_obs_fail",name,ymin,ymax,1,true);
 
-  // MC templates
+  // settings for MC templates
   std::vector<TString> syst = conf::syst;
-  std::vector<TString> processes_in = conf::processes_in;
-
-  std::vector<TString> processes_out;
-  processes_out.push_back("tp3"); processes_out.push_back("tp2"); processes_out.push_back("tp1"); processes_out.push_back("other"); 
-  std::vector<int>     colors    = {conf::tp3.color,conf::tp2.color,conf::tp1.color,conf::other.color};
-  std::vector<TString> legends   = {conf::tp3.legend_name,conf::tp2.legend_name,conf::tp1.legend_name,conf::other.legend_name};
-
+  std::map<TString, std::vector<TString>> processes_grouping = conf::processes_grouping;
+  std::map<TString, TString> legend_labels = conf::legend_labels;
+  std::map<TString, int> colors = conf::colors;
 
   std::vector<TH1D*> hist_out_p; hist_out_p.clear();
   std::vector<TH1D*> hist_out_f; hist_out_f.clear();
@@ -113,102 +109,97 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   category.push_back("pass"); 
   category.push_back("fail");
 
+  // convert the legend labels map in an (ordered) vector
+  std::vector<TString> labels;
+  for( const auto& pair: processes_grouping ){
+      TString process_out = pair.first;
+      labels.push_back(legend_labels.at(process_out));
+  }
+
   // loop over pass and fail categories 
-  for (unsigned int ic=0; ic<category.size(); ++ic){
+  for(unsigned int ic=0; ic<category.size(); ++ic){
       TString catstr_;
       if (category[ic] == "pass") { catstr_ = "pass"; }
       else { catstr_ = "fail"; }
 
       // loop over systematics and processes
-      for (unsigned int is=0; is<syst.size(); ++is){
-	  int count = 0;
-	  for (unsigned int ip=0; ip<processes_in.size(); ip+=1){
+      for(unsigned int is=0; is<syst.size(); ++is){
+      for( const auto& pair: processes_grouping ){
+          TString process_out = pair.first;
+          std::vector<TString> processes_in = pair.second;
 
           // handle nominal case
 	      if (syst[is]=="_"){
 
-              // the below is an extremely dirty index-based, hard-coded retrieval of histograms,
-              // which will almost certainly cause bugs at some point (it probably already is doing so).
-              // it immediately and silently breaks completely if some processes are commented out in the config.
-              // todo: redo
-          
-		      TH1D *h_;
-		      if (ip > 8){
-                  // background processes: the idea is (I think) to add all of them together in the "other" category of processes_out.
-                  // in practice, only the one at index 9 and 10 in the list of processes_in (assuming they exist)
-                  // are added together and the name is taken from processes_out[count], assuming count will always be 3 for this case.
-		          h_   = h1DHistoFrom2DTemplates(path2file,processes_in[ip]+"_"+syst[is]+catstr_,name,ymin,ymax,1,false);
-		          TH1D *h__  = h1DHistoFrom2DTemplates(path2file,processes_in[ip+1]+"_"+syst[is]+catstr_,name,ymin,ymax,1,false);
-		          h_->Add(h__);
-		      }
-		      else if(ip <= 8){   
-                  // signal processes (tt, st and ttv, each split in tp3, tp2, tp1):
-                  // the idea is to merge the three signal processes into "tp3", "tp2" and "tp1" (defined in processes_out).
-		          h_   = h1DHistoFrom2DTemplates(path2file,processes_in[ip]+"_"+syst[is]+catstr_,name,ymin,ymax,1,false);
-		          TH1D *h__  = h1DHistoFrom2DTemplates(path2file,processes_in[ip+1]+"_"+syst[is]+catstr_,name,ymin,ymax,1,false);
-		          TH1D *h___ = h1DHistoFrom2DTemplates(path2file,processes_in[ip+2]+"_"+syst[is]+catstr_,name,ymin,ymax,1,false);
-		          h_->Add(h__); h_->Add(h___);
+		      TH1D *hist = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"_"+syst[is]+catstr_,
+                                  name, ymin, ymax, 1, false);
+              for(unsigned int ip=1; ip<processes_in.size(); ++ip){
+		          TH1D* htemp = h1DHistoFrom2DTemplates(path2file, processes_in[ip]+"_"+syst[is]+catstr_,
+                                  name, ymin, ymax, 1, false);
+		          hist->Add(htemp);
 		      }
           
-		      h_->SetName(processes_out[count]); h_->SetLineColor(colors[count]); h_->SetFillColor(colors[count]);
-	 
-		      if (category[ic] == "pass") { hist_out_p.push_back(h_); hist_out_nom_p.push_back(h_); }
-		      else                        { hist_out_f.push_back(h_); hist_out_nom_f.push_back(h_); } 
+		      hist->SetName(process_out);
+              hist->SetLineColor(colors.at(process_out));
+              hist->SetFillColor(colors.at(process_out));
+		      if (category[ic] == "pass") { hist_out_p.push_back(hist); hist_out_nom_p.push_back(hist); }
+		      else                        { hist_out_f.push_back(hist); hist_out_nom_f.push_back(hist); } 
 		  }
 
           // handle systematic case
 	      else{
+              // set the correct name for the systematic
+              // note: this determines the correlation of the systematic between processes!
+              //       maybe later add in config fille.
 		      TString nameSyst = syst[is];
 		      if ( (syst[is].Contains("jms")) || (syst[is].Contains("jmr")) ){
-		          nameSyst = processes_out[count]+syst[is];
+		          nameSyst = process_out+syst[is];
 		      }
-		      if (ip>8){
-		          TH1D *h_up_   = h1DHistoFrom2DTemplates(path2file,processes_in[ip]+"_"+syst[is]+"Up_"+catstr_,name,ymin,ymax,1,false);
-		          TH1D *h_up__  = h1DHistoFrom2DTemplates(path2file,processes_in[ip+1]+"_"+syst[is]+"Up_"+catstr_,name,ymin,ymax,1,false);
-		          h_up_->Add(h_up__);
-		          h_up_->SetName(processes_out[count]+"_"+nameSyst+"Up"); h_up_->SetLineColor(colors[count]); h_up_->SetFillColor(colors[count]);
-		          if (category[ic] == "pass") { hist_out_p.push_back(h_up_); } else { hist_out_f.push_back(h_up_); }
+              
+              // up variation
+              TH1D *hist_up = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"_"+syst[is]+"Up_"+catstr_,
+                                     name, ymin, ymax, 1, false);
+		      for(unsigned int ip=1; ip<processes_in.size(); ++ip){
+		          TH1D *htemp_up = h1DHistoFrom2DTemplates(path2file, processes_in[ip]+"_"+syst[is]+"Up_"+catstr_,
+                                     name, ymin, ymax, 1, false);
+		          hist_up->Add(htemp_up);
+              }
+		      hist_up->SetName(process_out+"_"+nameSyst+"Up");
+              hist_up->SetLineColor(colors.at(process_out));
+              hist_up->SetFillColor(colors.at(process_out));
+		      if (category[ic] == "pass") { hist_out_p.push_back(hist_up); }
+              else { hist_out_f.push_back(hist_up); }
 
-		          TH1D *h_down_   = h1DHistoFrom2DTemplates(path2file,processes_in[ip]+"_"+syst[is]+"Down_"+catstr_,name,ymin,ymax,1,false);
-		          TH1D *h_down__  = h1DHistoFrom2DTemplates(path2file,processes_in[ip+1]+"_"+syst[is]+"Down_"+catstr_,name,ymin,ymax,1,false);
-		          h_down_->Add(h_down__); 
-		          h_down_->SetName(processes_out[count]+"_"+nameSyst+"Down"); h_down_->SetLineColor(colors[count]); h_down_->SetFillColor(colors[count]);
-		          if (category[ic] == "pass") { hist_out_p.push_back(h_down_); } else { hist_out_f.push_back(h_down_); }
-		      }
-		      else if (ip<=8){
-		          TH1D *h_up_   = h1DHistoFrom2DTemplates(path2file,processes_in[ip]+"_"+syst[is]+"Up_"+catstr_,name,ymin,ymax,1,false);
-		          TH1D *h_up__  = h1DHistoFrom2DTemplates(path2file,processes_in[ip+1]+"_"+syst[is]+"Up_"+catstr_,name,ymin,ymax,1,false);
-		          h_up_->Add(h_up__);
-		          TH1D *h_up___ = h1DHistoFrom2DTemplates(path2file,processes_in[ip+2]+"_"+syst[is]+"Up_"+catstr_,name,ymin,ymax,1,false);
-		          h_up_->Add(h_up___); 
-		          h_up_->SetName(processes_out[count]+"_"+nameSyst+"Up"); h_up_->SetLineColor(colors[count]); h_up_->SetFillColor(colors[count]);
-		          if (category[ic] == "pass") { hist_out_p.push_back(h_up_); } else { hist_out_f.push_back(h_up_); }
-	  
-		          TH1D *h_down_   = h1DHistoFrom2DTemplates(path2file,processes_in[ip]+"_"+syst[is]+"Down_"+catstr_,name,ymin,ymax,1,false);
-		          TH1D *h_down__  = h1DHistoFrom2DTemplates(path2file,processes_in[ip+1]+"_"+syst[is]+"Down_"+catstr_,name,ymin,ymax,1,false);
-		          h_down_->Add(h_down__); 
-		          TH1D *h_down___ = h1DHistoFrom2DTemplates(path2file,processes_in[ip+2]+"_"+syst[is]+"Down_"+catstr_,name,ymin,ymax,1,false);
-		          h_down_->Add(h_down___);
-		          h_down_->SetName(processes_out[count]+"_"+nameSyst+"Down"); h_down_->SetLineColor(colors[count]); h_down_->SetFillColor(colors[count]);
-		          if (category[ic] == "pass") { hist_out_p.push_back(h_down_); } else { hist_out_f.push_back(h_down_); }
-		    }
-		}
-	    ip = ip+2;
-	    ++count;
-	} // end of loop over the processes
-	} // end of loop over the syst 
-    } // end of loop over the categories
+              // down variation
+              TH1D *hist_down = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"_"+syst[is]+"Down_"+catstr_,
+                                     name, ymin, ymax, 1, false);
+              for(unsigned int ip=1; ip<processes_in.size(); ++ip){ 
+                  TH1D *htemp_down = h1DHistoFrom2DTemplates(path2file, processes_in[ip]+"_"+syst[is]+"Down_"+catstr_,
+                                     name, ymin, ymax, 1, false);
+                  hist_down->Add(htemp_down);
+              }
+              hist_down->SetName(process_out+"_"+nameSyst+"Down");
+              hist_down->SetLineColor(colors.at(process_out));
+              hist_down->SetFillColor(colors.at(process_out)); 
+              if (category[ic] == "pass") { hist_out_p.push_back(hist_down); }
+              else { hist_out_f.push_back(hist_down); }
+		  }
+      } // end of loop over the processes
+      } // end of loop over the syst 
+  } // end of loop over the categories
  
-  // make a plot 
+  // make a legend
   TLegend* leg = new TLegend(0.33,0.62,0.92,0.90);
   leg->SetNColumns(2);
   leg->SetFillStyle(0);
   leg->SetFillColor(0);
   leg->SetLineWidth(0);
   leg->AddEntry(h_data_p,"Data","PL");
-  
-  for (unsigned int i0=0; i0<hist_out_nom_p.size(); ++i0) { leg->AddEntry(hist_out_nom_p[i0],legends[i0],"F"); }
+  for(unsigned int i0=0; i0<hist_out_nom_p.size(); ++i0){
+      leg->AddEntry(hist_out_nom_p[i0], labels[i0], "F");
+  }
 
+  // make a plot
   TCanvas *c_pass = makeCanvasWithRatio(h_data_p,hist_out_nom_p,"fit_"+sample+"_templates",name+"_pass","m_{regressed} [GeV]","Events / Bin",leg);  
   c_pass->Print(outputDir+"/"+nameoutfile+"_pass.png"); 
   
@@ -331,6 +322,15 @@ TH1D *h1DHistoFrom2DTemplates(TString path2file, TString h2dname, TString name, 
   // get the 2D histogram
   TFile *f2d = TFile::Open(path2file, "READONLY");
   TH2D *h2d = (TH2D*)f2d->Get(h2dname);
+  if(!h2d){
+      // if an object with the requested name is not found, return a nullptr
+      std::string msg = "WARNING in h1DHistoFrom2DTemplates:";
+      msg += " 2D histogram with name " + (std::string)h2dname + " requested,";
+      msg += " but not found in file " + (std::string)path2file;
+      std::cerr << msg << std::endl;
+      TH1D* res;
+      return res;
+  }
   h2d->SetDirectory(0);
 
   // make the projection
@@ -391,18 +391,19 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   TFile *fdiag = TFile::Open(fdiag_, "READONLY");
 
   // read processes, colors and legend entries from config
-  std::vector<TString> processes; processes.clear();
-  std::vector<int> colors;        colors.clear();
-  std::vector<TString> legends;   legends.clear();
-  if (sample == "tt1l"){
-      processes.push_back("tp3"); processes.push_back("tp2"); processes.push_back("tp1"); processes.push_back("other"); processes.push_back("total");
-      colors.push_back(conf::tp3.color); colors.push_back(conf::tp2.color); colors.push_back(conf::tp1.color); colors.push_back(conf::other.color); colors.push_back(8);
-      legends.push_back(conf::tp3.legend_name);
-      legends.push_back(conf::tp2.legend_name);
-      legends.push_back(conf::tp1.legend_name);
-      legends.push_back(conf::other.legend_name);
-      legends.push_back("Total");
+  std::map<TString, std::vector<TString>> processes_grouping = conf::processes_grouping;
+  std::vector<TString> processes;
+  for(const auto& pair: processes_grouping){
+      processes.push_back(pair.first);
   }
+  std::map<TString, int> colors = conf::colors;
+  std::map<TString, TString> legend_labels = conf::legend_labels;
+
+  // also add total
+  // (hard-coded for now)
+  processes.push_back("total");
+  colors["total"] = 8;
+  legend_labels["total"] = "Total";
 
   // get histograms
   TString prefitstr = "shapes_prefit";
@@ -413,28 +414,28 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   std::vector<TH1F*> h_prefit; h_prefit.clear();
   std::vector<TH1F*> h_postfit; h_postfit.clear();
   std::cout << "INFO in makeDataMCPlotsFromCombine: reading histograms:" << std::endl;
-  for (unsigned int i0=0; i0<processes.size(); ++i0){
+  for(TString process: processes){
       // get prefit histos
-      TString h_prefit_name = prefitstr+"/"+passOrFail+"/"+processes[i0];
+      TString h_prefit_name = prefitstr+"/"+passOrFail+"/"+process;
       std::cout << "  - " << h_prefit_name << " (prefit)" << std::endl;
       TH1F *h_prefit_ = (TH1F*)fdiag->Get(h_prefit_name);
-      h_prefit_->SetName("h_pre_"+name+"_"+processes[i0]+"_"+passOrFail+"_");
+      h_prefit_->SetName("h_pre_"+name+"_"+process+"_"+passOrFail+"_");
       TH1F *h_prefit__ = rescaleXaxis(h_prefit_,conf::minX,conf::maxX);
-      h_prefit_->SetName("h_pre_"+name+"_"+processes[i0]+"_"+passOrFail);
-      h_prefit__->SetLineColor(colors[i0]);
+      h_prefit_->SetName("h_pre_"+name+"_"+process+"_"+passOrFail);
+      h_prefit__->SetLineColor(colors.at(process));
       h_prefit__->SetLineStyle(2);
       h_prefit__->SetLineWidth(3);
       h_prefit__->SetMarkerSize(0);
       h_prefit.push_back(h_prefit__);
       
       // get postfit histograms
-      TString h_postfit_name = postfitstr+"/"+passOrFail+"/"+processes[i0];
+      TString h_postfit_name = postfitstr+"/"+passOrFail+"/"+process;
       std::cout << "  - " << h_postfit_name << " (postfit)" << std::endl;
       TH1F *h_postfit_ = (TH1F*)fdiag->Get(h_postfit_name);
-      h_postfit_->SetName("h_post_"+name+"_"+processes[i0]+"_"+passOrFail+"_");
+      h_postfit_->SetName("h_post_"+name+"_"+process+"_"+passOrFail+"_");
       TH1F *h_postfit__ = rescaleXaxis(h_postfit_,conf::minX,conf::maxX);
-      h_postfit_->SetName("h_post_"+name+"_"+processes[i0]+"_"+passOrFail);
-      h_postfit__->SetLineColor(colors[i0]);
+      h_postfit_->SetName("h_post_"+name+"_"+process+"_"+passOrFail);
+      h_postfit__->SetLineColor(colors.at(process));
       h_postfit__->SetLineStyle(1);
       h_postfit__->SetLineWidth(3);
       h_postfit__->SetMarkerSize(0);
@@ -464,7 +465,9 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   leg->SetFillColor(0);
   leg->SetLineWidth(0);
   leg->SetTextFont(42);
-  for (unsigned int i0=0; i0<h_prefit.size(); ++i0) { leg->AddEntry(h_postfit[i0], legends[i0], "L"); }
+  for(unsigned int i0=0; i0<h_prefit.size(); ++i0){
+      leg->AddEntry(h_postfit[i0], legend_labels.at(processes[i0]), "L");
+  }
 
   // make legend (lower panel)
   TLegend* leg_ratio = new TLegend(0.2, 0.82, 0.94, 0.95);
