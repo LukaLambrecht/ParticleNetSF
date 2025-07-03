@@ -39,6 +39,15 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   // make the configuration for this sample
   conf::configuration(sample);
 
+  // get the shape systematics to include from the configuration
+  // note: normalization systematics are not included in this list;
+  //       to modify them, just edit the code below (for now).
+  // note: this is not yet used in practice (for now),
+  //       as it would be not super trivial to define which systematics
+  //       to include for which process.
+  //       so for now just edit the code below to make changes.
+  std::vector<TString> systematics = conf::syst;
+
   // set name and label
   TString algolabel = "particlenet";
   TString name = (TString)name_;

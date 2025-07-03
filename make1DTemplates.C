@@ -384,7 +384,9 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); } 
 
   // read input file
-  TString fdiag_ = workdir+"/fitdir/fitdiagnostics_particlenet"+"_"+sample+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
+  TString algolabel = "particlenet";
+  TString fullname = algolabel + "_" + sample + "_" + wpmin + "to" + wpmax + "_" +era + "_" +name;
+  TString fdiag_ = workdir+"/fitdir/fitDiagnostics_" + fullname + ".root";
   std::cout << "INFO in makeDataMCPlotsFromCombine: reading input file " << fdiag_ << std::endl;
   TFile *fdiag = TFile::Open(fdiag_, "READONLY");
 
@@ -587,13 +589,13 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
  
   if (log) 
     {
-      c->Print(workdir+"/plots_datamc/"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_log.pdf");
-      c->Print(workdir+"/plots_datamc/"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_log.png");
+      c->Print(workdir+"/plots_postfit/" + fullname + "_" + passOrFail + "_log.pdf");
+      c->Print(workdir+"/plots_postfit/" + fullname + "_" + passOrFail + "_log.png");
     } 
   else 
     {
-      c->Print(workdir+"/plots_postfit/"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_lin.pdf");
-      c->Print(workdir+"/plots_postfit/"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_lin.png");
+      c->Print(workdir+"/plots_postfit/" + fullname + "_" + passOrFail + "_lin.pdf");
+      c->Print(workdir+"/plots_postfit/" + fullname + "_" + passOrFail + "_lin.png");
     } 
 }
 
