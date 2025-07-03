@@ -25,7 +25,7 @@ void makeDataMCPlotFromCombine(TString path2file, TString era, TString wpmin, TS
 			       float xmin, float xmax, int nbins,TString xaxisname, bool log, TString sample);
 TH1D *h1DHistoFrom2DTemplates(TString path2file,TString h2dname,TString name,double ymin, double ymax,int color,bool isdata);
 TCanvas *makeCanvasWithRatio(TH1D* hdata, std::vector<TH1D*> h1d, TString dir, TString name, TString xname, TString yname, TLegend *leg);
-void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TString name, TString sample, double ymin, double ymax, TString outputDir=".");
+void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TString ptname, TString sample, double ymin, double ymax, TString outputDir=".");
 
 
 // main function
@@ -34,7 +34,7 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
 
   // make the configuration for this sample
   conf::configuration(sample);
-  std::vector<TString> name  = conf::name;
+  std::vector<TString> ptnames = conf::ptnames;
   std::vector<double>  ptmin = conf::ptmin;
   std::vector<double>  ptmax = conf::ptmax;    
   
@@ -42,9 +42,9 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
   // (just read the output from combine and make the plot)
   if (postfit){
       if (sample == "tt1l"){ 
-	  for (int i0=0; i0<name.size(); ++i0){
+	  for (int i0=0; i0<ptnames.size(); ++i0){
           outputDir += "/templates1D";
-	      makeDataMCPlotFromCombine(outputDir, era, wpmin, wpmax, name[i0], passOrFail,
+	      makeDataMCPlotFromCombine(outputDir, era, wpmin, wpmax, ptnames[i0], passOrFail,
             conf::minX, conf::maxX, conf::binsX, "m_{regressed} [GeV]", false, sample);
 	  }
 	  }
@@ -58,11 +58,11 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
   else{
       if (sample == "tt1l"){
       // loop over pt bins
-	  for (int i0=0; i0<name.size(); ++i0){ 
-	      std::cout << "Now running on pt bin " << name[i0] << std::endl;
+	  for (int i0=0; i0<ptnames.size(); ++i0){ 
+	      std::cout << "Now running on pt bin " << ptnames[i0] << std::endl;
           TString inputFile = outputDir + "/templates2D/particlenet_"+sample+"_"+wpmin+"to"+wpmax+"_"+era+"_200to1200_templates.root";
           TString outputName = "particlenet_"+sample+"_"+wpmin+"to"+wpmax+"_"+era;
-	      makeDataMCFrom2DTemplatesTop(inputFile, outputName, name[i0], sample, ptmin[i0], ptmax[i0], outputDir);
+	      makeDataMCFrom2DTemplatesTop(inputFile, outputName, ptnames[i0], sample, ptmin[i0], ptmax[i0], outputDir);
 	  }
       }
       else{

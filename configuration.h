@@ -24,7 +24,7 @@ namespace conf {
   TString score_def;
   TString score_category; 
   
-  std::vector<TString> name; 
+  std::vector<TString> ptnames; 
   std::vector<double>  ptmin; 
   std::vector<double>  ptmax;
   std::vector<TString> processes;
@@ -140,10 +140,10 @@ namespace conf {
     //       with the ones from the previous step;
     //       for example: a pt bin of 300-325 GeV is not possible if the bins
     //       were defined with binsY = 4; minY = 200; maxY = 400;
-    //name.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
-    //name.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);  
-    //name.push_back("pt400to800"); ptmin.push_back(400.); ptmax.push_back(800.);
-    name.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
+    //ptnames.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
+    //ptnames.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);  
+    //ptnames.push_back("pt400to800"); ptmin.push_back(400.); ptmax.push_back(800.);
+    ptnames.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
     
     // =================== end of area to modify - tune ===================== //
 

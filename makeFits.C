@@ -20,16 +20,16 @@ void makeFits(std::string era, std::string sample,
 
   // make the configuration for this sample
   conf::configuration(sample);
-  std::vector<TString> binnames = conf::name;
+  std::vector<TString> ptnames = conf::ptnames;
   TString category = conf::score_category;
   
   // define what to do based on sample
   // note: this is a relic from earlier development (?),
   //       in practice the sample is always 'tt1l'. 
   if(sample=="tt1l"){
-      for(TString binname: binnames){
-          std::cout << "Running makeFits on bin " << binname << std::endl; 
-	      makeOneFit(outputDir, era, (std::string)category, wpmin, wpmax, (std::string)binname);
+      for(TString ptname: ptnames){
+          std::cout << "Running makeFits on pt bin " << ptname << std::endl; 
+	      makeOneFit(outputDir, era, (std::string)category, wpmin, wpmax, (std::string)ptname);
 	  } 
   }
   else{
