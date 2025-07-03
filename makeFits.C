@@ -9,11 +9,13 @@
 
 
 // declare helper functions
-void makeOneFit(std::string era, std::string category, std::string wpmin, std::string wpmax, std::string name);
+void makeOneFit(std::string wordir, std::string era, std::string category,
+        std::string wpmin, std::string wpmax, std::string name);
 
 
 // main function
-void makeFits(std::string era, std::string category, std::string wpmin, std::string wpmax, TString sample) {
+void makeFits(std::string era, std::string sample, std::string category, std::string wpmin, std::string wpmax,
+        std::string outputDir="."){
 
   // make the configuration for this sample
   conf::configuration(sample);
@@ -25,7 +27,7 @@ void makeFits(std::string era, std::string category, std::string wpmin, std::str
   if(sample=="tt1l"){
       for (int i0=0; i0<name.size(); ++i0){
           std::cout << "Running makeFits on pt bin " << name[i0] << std::endl; 
-	      makeOneFit(era, category, wpmin, wpmax, (std::string)name[i0]);
+	      makeOneFit(outputDir, era, category, wpmin, wpmax, (std::string)name[i0]);
 	  } 
   }
   else{
@@ -35,7 +37,8 @@ void makeFits(std::string era, std::string category, std::string wpmin, std::str
 }
 
 
-void makeOneFit(std::string era, std::string category, std::string wpmin, std::string wpmax, std::string name) {
+void makeOneFit(std::string workdir, std::string era, std::string category,
+        std::string wpmin, std::string wpmax, std::string name) {
 
   // check category
   std::string pos;
@@ -46,19 +49,26 @@ void makeOneFit(std::string era, std::string category, std::string wpmin, std::s
       throw std::runtime_error(msg);
   }
 
+  // set path to datacard and workspace
+  std::string fitdir = workdir + "/templates1D/fitdir";
+  std::string datacard = fitdir+"/datacard_particlenet_tt1l_" + wpmin + "to" + wpmax + "_" + era + "_" + name + ".txt";
+  std::string workspace = fitdir+"/datacard_particlenet_tt1l_" + wpmin + "to" + wpmax + "_" + era + "_" + name + ".root";
+
   // make text2workspace command
-  std::string txt2workspace = (std::string)"text2workspace.py -m 125 -P HiggsAnalysis.CombinedLimit.TagAndProbeExtended:tagAndProbe"
-      + " templates1D/fitdir/datacard_particlenet_tt1l_" + wpmin + "to" + wpmax + "_" + era + "_" + name + ".txt"
-      + " --PO categories=" + pos;
+  std::string txt2workspace = (std::string)"text2workspace.py -m 125"
+      + " -P HiggsAnalysis.CombinedLimit.TagAndProbeExtended:tagAndProbe "
+      + datacard + " --PO categories=" + pos;
  
   // make other commands
   std::string algolabel = "particlenet";
-  std::string multidimfit       = "combine -M MultiDimFit -m 125 templates1D/fitdir/datacard_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root  --algo=singles --robustFit=1 --cminDefaultMinimizerTolerance 5.";
+  std::string multidimfit = "combine -M MultiDimFit -m 125 "
+      + workspace + " --algo=singles --robustFit=1 --cminDefaultMinimizerTolerance 5.";
   
-  std::string fitdiagnostics    = "combine -M FitDiagnostics -m 125 templates1D/fitdir/datacard_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root --saveShapes --saveWithUncertainties --robustFit=1 --cminDefaultMinimizerTolerance 5.";
+  std::string fitdiagnostics = "combine -M FitDiagnostics -m 125 "
+      + workspace + " --saveShapes --saveWithUncertainties --robustFit=1 --cminDefaultMinimizerTolerance 5.";
   
-  std::string mvmultidimfitfile = "mv higgsCombineTest.MultiDimFit.mH125.root templates1D/fitdir/multidimfit_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
-  std::string mvfitdiagnostics  = "mv fitDiagnosticsTest.root templates1D/fitdir/fitdiagnostics_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
+  std::string mvmultidimfitfile = "mv higgsCombineTest.MultiDimFit.mH125.root " + fitdir + "/multidimfit_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
+  std::string mvfitdiagnostics  = "mv fitDiagnosticsTest.root " + fitdir + "/fitdiagnostics_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
   
   // type conversion of combine commands
   const char *command_txt2workspace     = txt2workspace.c_str();
@@ -75,15 +85,15 @@ void makeOneFit(std::string era, std::string category, std::string wpmin, std::s
   system(command_mvfitdiagnostics);
   
   // make impacts commands
-  std::string impacts_1 = "combineTool.py -M Impacts -d templates1D/fitdir/datacard_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root -m 125 --doInitialFit --robustFit 1 --exclude 'rgx{prop.*}'";
-  std::string impacts_2 = "combineTool.py -M Impacts -d templates1D/fitdir/datacard_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root -m 125 --robustFit 1 --doFits --parallel 60 --exclude 'rgx{prop.*}'";
-  std::string impacts_3 = "combineTool.py -M Impacts -d templates1D/fitdir/datacard_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root -m 125 -o impacts.json --exclude 'rgx{prop.*}'";
+  std::string impacts_1 = "combineTool.py -M Impacts -d " + workspace + " -m 125 --doInitialFit --robustFit 1 --exclude 'rgx{prop.*}'";
+  std::string impacts_2 = "combineTool.py -M Impacts -d " + workspace + " -m 125 --robustFit 1 --doFits --parallel 60 --exclude 'rgx{prop.*}'";
+  std::string impacts_3 = "combineTool.py -M Impacts -d " + workspace + " -m 125 -o impacts.json --exclude 'rgx{prop.*}'";
   std::string impacts_4 = "plotImpacts.py -i impacts.json -o impacts";
-  std::string impacts_5 = "mv impacts.pdf templates1D/fitdir/impacts_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".pdf";
-  std::string impacts_6 = "mv impacts.json templates1D/fitdir/impacts_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".json";
-  std::string impacts_7 = "mv combine_logger.out templates1D/fitdir/combine_logger_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".out";
-  std::string impacts_8 = "python3 $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/data/tutorials/longexercise/diffNuisances.py templates1D/fitdir/fitdiagnostics_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root -A -g plots.root";
-  std::string impacts_9 = "mv plots.root templates1D/fitdir/impact_plots_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
+  std::string impacts_5 = "mv impacts.pdf " + fitdir + "/impacts_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".pdf";
+  std::string impacts_6 = "mv impacts.json " + fitdir + "/impacts_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".json";
+  std::string impacts_7 = "mv combine_logger.out " + fitdir + "/combine_logger_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".out";
+  std::string impacts_8 = "python3 $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/data/tutorials/longexercise/diffNuisances.py " + fitdir + "/fitdiagnostics_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root -A -g plots.root";
+  std::string impacts_9 = "mv plots.root " + fitdir + "/impact_plots_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
  
   // type conversion for impacts commands
   const char *command_impacts1 = impacts_1.c_str();
@@ -110,7 +120,9 @@ void makeOneFit(std::string era, std::string category, std::string wpmin, std::s
   system("rm higgsCombine*.root");*/
   
   // post fit plots
-  system("root -l -q \'make1DTemplates.C(\"'"+(TString)era+"'\",\"tt1l\",\"'"+(TString)wpmin+"'\",\"'"+(TString)wpmax+"'\",true,\"pass\")\'");
-  system("root -l -q \'make1DTemplates.C(\"'"+(TString)era+"'\",\"tt1l\",\"'"+(TString)wpmin+"'\",\"'"+(TString)wpmax+"'\",true,\"fail\")\'");
-  
+  TString cmd;
+  cmd = "make1DTemplates.C(\"'"+(TString)era+"'\",\"tt1l\",\"'"+(TString)wpmin+"'\",\"'"+(TString)wpmax+"'\",true,\"pass\",\""+(TString)workdir+"\")";
+  system("root -l -q \'" + cmd + "\'");
+  cmd = "make1DTemplates.C(\"'"+(TString)era+"'\",\"tt1l\",\"'"+(TString)wpmin+"'\",\"'"+(TString)wpmax+"'\",true,\"fail\",\""+(TString)workdir+"\")";
+  system("root -l -q \'" + cmd + "\'");
 }

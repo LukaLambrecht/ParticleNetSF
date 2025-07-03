@@ -19,12 +19,12 @@ import jobtools.condortools as ct
 # todo: add optional arguments for more flexibility
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--category', required=True, choices=['top', 'W'])
-parser.add_argument('-v', '--version', required=True, choices=['nominal', 'MD'])
 parser.add_argument('-y', '--year', required=True, nargs='+',
   help='Data-taking year (note that multiple can be provided, separated by spaces).')
-parser.add_argument('--wps', default='auto',
-  help='Path to json file with working point definitions'
-      +' (default: automatically determine correct file based on category and version)')
+parser.add_argument('-w', '--working_points', required=True,
+  help='Path to json file with working point definitions.')
+parser.add_argument('-o', '--outputdir', default='output', type=os.path.abspath,
+  help='Define path where output should appear.')
 parser.add_argument('-r', '--runmode', default='interactive', choices=['interactive', 'condor'],
   help='Run in terminal or in condor job submission')
 parser.add_argument('--cmssw', default='auto',
@@ -33,14 +33,9 @@ parser.add_argument('--jobdir', default='auto',
   help='Define path where job log files should appear (only used in job submission)')
 args = parser.parse_args()
 
-# parse working point json file
-if args.wps=='auto':
-    args.wps = os.path.join('wps', f'wps_{args.category.lower()}_{args.version.lower()}.json')
-    print(f'Found working point file {args.wps}')
-
 # check working point json file
-if not os.path.exists(args.wps):
-    msg = f'Json file with working point definitions {args.wps} does not exist.'
+if not os.path.exists(args.working_points):
+    msg = f'Json file with working point definitions {args.working_points} does not exist.'
     raise Exception(msg)
 
 # parse CMSSW version
@@ -63,28 +58,33 @@ if args.runmode!='interactive' and args.jobdir=='auto':
     print(f'Set job directory to {args.jobdir}')
 
 # read working point json file
-with open(args.wps, 'r') as f:
-    wps = json.load(f)
-print(f'Read the following working points from {args.wps}:')
-print(json.dumps(wps, indent=2))
+with open(args.working_points, 'r') as f:
+    working_points = json.load(f)
+print(f'Read the following working points from {args.working_points}:')
+print(json.dumps(working_points, indent=2))
 
 # check if all requested years are present in the working point dict
 for year in args.year:
-    if year not in wps.keys():
-        msg = f'Year {year} not found in {args.wps}.'
+    if year not in working_points.keys():
+        msg = f'Year {year} not found in {args.working_points}.'
         raise Exception(msg)
+
+# make output directory and copy auxiliary files
+if not os.path.exists(args.outputdir): os.makedirs(args.outputdir)
+os.system(f'cp configuration.h {args.outputdir}')
+os.system(f'cp {args.working_points} {args.outputdir}')
 
 # loop over years and mistag rates
 jobs = []
 for year in args.year:
-   for mistag_rate, wp in wps[year].items():
+   for mistag_rate, wp in working_points[year].items():
       
       # make the commands to run
       cmds = []
-      cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{wp}", "1.00")' )
-      cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{wp}", "1.00", false, "")' )
-      cmds.append( f'makeDatacards.C("{year}", "tt1l", "{wp}", "1.00")' )
-      cmds.append( f'makeFits.C("{year}", "{args.category.lower()}", "{wp}", "1.00", "tt1l")' )
+      cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
+      cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{wp}", "1.00", false, "", "{args.outputdir}")' )
+      cmds.append( f'makeDatacards.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
+      cmds.append( f'makeFits.C("{year}", "tt1l", "{args.category.lower()}", "{wp}", "1.00", "{args.outputdir}")' )
      
       for idx, cmd in enumerate(cmds):
           cmds[idx] = f'root -l -q \'{cmd}\''

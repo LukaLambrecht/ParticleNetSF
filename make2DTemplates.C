@@ -27,7 +27,8 @@ TH2D *create2Dhisto(TString sample, TTree *tree, TString intLumi, TString cuts,
         bool useLog, TString name, bool data);
 
 void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
-        TString score="fj_1_ParticleNetMD_XbbVsQCD", TString ptmin="0", TString ptmax="9999", TString suffix="none");
+        TString score="fj_1_ParticleNetMD_XbbVsQCD", TString ptmin="0", TString ptmax="9999",
+        TString outputDir=".");
 
 void makeMCHistosTop(TString name, TString path, std::vector<TString> processes, std::vector<TString> process_names,
         TString sys, TString sysType, TString wgts, std::vector<TString> cuts,
@@ -47,8 +48,9 @@ double massSmear(double mass, unsigned long lumi, unsigned long event, double si
 
 
 // main function
-void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax) 
-{
+void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
+       TString outputDir="."){
+
     // make the configuration for this sample
     conf::configuration(sample);
 
@@ -62,7 +64,7 @@ void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax)
         //       instead, the values are hard-coded here.
         TString ptmin = "200";
         TString ptmax = "1200";
-        makeTemplatesTop(sample, era, wpmin, wpmax, conf::score_def, ptmin, ptmax);    
+        makeTemplatesTop(sample, era, wpmin, wpmax, conf::score_def, ptmin, ptmax, outputDir);    
     }
     else {
         TString msg = "Sample " + sample + " not recognized.";
@@ -74,7 +76,7 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
         TString score="fj_1_ParticleNetMD_XbbVsQCD", 
         TString ptmin="0==0",
         TString ptmax="0==0",
-        TString suffix="none") {
+        TString outputDir=".") {
 
   // some generic ROOT settings
   setTDRStyle();
@@ -110,15 +112,15 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
 
   // set directory to store the templates
   // todo: maybe add score in output directory or file name to avoid confusion
-  TString dirname1 = "templates2D";
+  outputDir += "/templates2D";
   TString nameoutfile = "particlenet_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+ptmin+"to"+ptmax+"_templates";
   
   // make output directory
-  const int dir_err = system("mkdir -p ./"+dirname1);
+  const int dir_err = system("mkdir -p " + outputDir);
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); }
  
   // make output file
-  TString outfile = "./"+dirname1+"/"+nameoutfile+".root";
+  TString outfile = outputDir+"/"+nameoutfile+".root";
   TFile *fout = new TFile(outfile, "RECREATE");
   std::cout << "Will write output to " << outfile << std::endl;
   

@@ -1,3 +1,6 @@
 # ignore compiled python code
 **__pycache__*
 **.pyc
+
+# ignore output directories
+output*

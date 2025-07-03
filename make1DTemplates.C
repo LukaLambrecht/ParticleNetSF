@@ -25,12 +25,12 @@ void makeDataMCPlotFromCombine(TString path2file, TString era, TString wpmin, TS
 			       float xmin, float xmax, int nbins,TString xaxisname, bool log, TString sample);
 TH1D *h1DHistoFrom2DTemplates(TString path2file,TString h2dname,TString name,double ymin, double ymax,int color,bool isdata);
 TCanvas *makeCanvasWithRatio(TH1D* hdata, std::vector<TH1D*> h1d, TString dir, TString name, TString xname, TString yname, TLegend *leg);
-void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TString name, TString sample, double ymin, double ymax);
+void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TString name, TString sample, double ymin, double ymax, TString outputDir=".");
 
 
 // main function
 void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
-       bool postfit=false, TString passOrFail="pass"){
+       bool postfit=false, TString passOrFail="pass", TString outputDir="."){
 
   // make the configuration for this sample
   conf::configuration(sample);
@@ -42,8 +42,9 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
   // (just read the output from combine and make the plot)
   if (postfit){
       if (sample == "tt1l"){ 
-	  for (int i0=0; i0<name.size(); ++i0){ 
-	      makeDataMCPlotFromCombine("templates1D", era, wpmin, wpmax, name[i0], passOrFail,
+	  for (int i0=0; i0<name.size(); ++i0){
+          outputDir += "/templates1D";
+	      makeDataMCPlotFromCombine(outputDir, era, wpmin, wpmax, name[i0], passOrFail,
             conf::minX, conf::maxX, conf::binsX, "m_{regressed} [GeV]", false, sample);
 	  }
 	  }
@@ -59,9 +60,9 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
       // loop over pt bins
 	  for (int i0=0; i0<name.size(); ++i0){ 
 	      std::cout << "Now running on pt bin " << name[i0] << std::endl;
-          TString inputFile = "templates2D/particlenet_"+sample+"_"+wpmin+"to"+wpmax+"_"+era+"_200to1200_templates.root";
+          TString inputFile = outputDir + "/templates2D/particlenet_"+sample+"_"+wpmin+"to"+wpmax+"_"+era+"_200to1200_templates.root";
           TString outputName = "particlenet_"+sample+"_"+wpmin+"to"+wpmax+"_"+era;
-	      makeDataMCFrom2DTemplatesTop(inputFile, outputName, name[i0], sample, ptmin[i0], ptmax[i0]);
+	      makeDataMCFrom2DTemplatesTop(inputFile, outputName, name[i0], sample, ptmin[i0], ptmax[i0], outputDir);
 	  }
       }
       else{
@@ -72,7 +73,10 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
 }
 
 
-void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TString name, TString sample, double ymin, double ymax) {
+void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TString name, TString sample,
+        double ymin, double ymax,
+        TString outputDir="."){
+
   TH1::SetDefaultSumw2(kTRUE);
   setTDRStyle();
   gROOT->SetBatch(true);
@@ -82,8 +86,8 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   conf::configuration(path2file);
 
   // prepare directories
-  TString outputDir = "templates1D";
-  const int dir_err = system("mkdir -p ./"+outputDir);
+  outputDir += "/templates1D";
+  const int dir_err = system("mkdir -p " + outputDir);
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); }
   nameoutfile = nameoutfile+"_"+name;
 
@@ -212,7 +216,7 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   c_fail->Print(outputDir+"/"+nameoutfile+"_fail.png");
   
   // write templates to ROOT file
-  TFile *fout_p = new TFile("./"+outputDir+"/"+nameoutfile+"_templates_p.root","RECREATE");
+  TFile *fout_p = new TFile(outputDir+"/"+nameoutfile+"_templates_p.root","RECREATE");
   h_data_p->Write("data_obs");
   for (unsigned int i0=0; i0<hist_out_p.size(); ++i0) 
     {
@@ -220,7 +224,7 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
     }  
   fout_p->Close();
   
-  TFile *fout_f = new TFile("./"+outputDir+"/"+nameoutfile+"_templates_f.root","RECREATE");
+  TFile *fout_f = new TFile(outputDir+"/"+nameoutfile+"_templates_f.root","RECREATE");
   h_data_f->Write("data_obs");
   for (unsigned int i0=0; i0<hist_out_f.size(); ++i0)
     {
@@ -355,7 +359,7 @@ TH1D *h1DHistoFrom2DTemplates(TString path2file, TString h2dname, TString name, 
 }
 
 
-void makeDataMCPlotFromCombine(TString path2file, TString era,
+void makeDataMCPlotFromCombine(TString workdir, TString era,
                    TString wpmin, TString wpmax, TString name, TString passOrFail, 
 			       float xmin, float xmax, int nbins, TString xaxisname, bool log, TString sample =""){
   // Plotting function for data vs. MC plot starting from a combine output file
@@ -376,11 +380,11 @@ void makeDataMCPlotFromCombine(TString path2file, TString era,
   if (xaxisname == "mass") { xaxisname = "m_{SD} [GeV]"; }
 
   // make output directory
-  const int dir_err = system("mkdir -p ./"+(TString)path2file+"/plots_postfit");
+  const int dir_err = system("mkdir -p "+(TString)workdir+"/plots_postfit");
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); } 
 
   // read input file
-  TString fdiag_ = "./"+path2file+"/fitdir/fitdiagnostics_particlenet"+"_"+sample+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
+  TString fdiag_ = workdir+"/fitdir/fitdiagnostics_particlenet"+"_"+sample+"_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".root";
   std::cout << "INFO in makeDataMCPlotsFromCombine: reading input file " << fdiag_ << std::endl;
   TFile *fdiag = TFile::Open(fdiag_, "READONLY");
 
@@ -583,13 +587,13 @@ void makeDataMCPlotFromCombine(TString path2file, TString era,
  
   if (log) 
     {
-      c->Print(path2file+"/plots_datamc/"+path2file+"_"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_log.pdf");
-      c->Print(path2file+"/plots_datamc/"+path2file+"_"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_log.png");
+      c->Print(workdir+"/plots_datamc/"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_log.pdf");
+      c->Print(workdir+"/plots_datamc/"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_log.png");
     } 
   else 
     {
-      c->Print(path2file+"/plots_postfit/"+path2file+"_"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_lin.pdf");
-      c->Print(path2file+"/plots_postfit/"+path2file+"_"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_lin.png");
+      c->Print(workdir+"/plots_postfit/"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_lin.pdf");
+      c->Print(workdir+"/plots_postfit/"+sample+"_"+era+"_"+name+"_"+wpmin+"to"+wpmax+"_"+passOrFail+"_lin.png");
     } 
 }
 

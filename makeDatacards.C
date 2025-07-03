@@ -7,10 +7,10 @@
 
 
 // declare helper functions
-void makeOneDatacard(TString inputname, TString wpmin, TString wpmax, TString name, TString sample, TString era);
+void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name, TString sample, TString era);
 
 // main function
-void makeDatacards(TString era, TString sample, TString wpmin, TString wpmax){
+void makeDatacards(TString era, TString sample, TString wpmin, TString wpmax, TString outputDir){
 
   // make the configuration for this sample
   conf::configuration(sample);
@@ -22,7 +22,8 @@ void makeDatacards(TString era, TString sample, TString wpmin, TString wpmax){
   if(sample=="tt1l"){
       for (int i0=0; i0<name.size(); ++i0){
           std::cout << "Running makeDatacards on pt bin " << name[i0] << std::endl;
-	      makeOneDatacard("templates1D", wpmin, wpmax, name[i0], sample, era);
+          outputDir += "/templates1D";
+	      makeOneDatacard(outputDir, wpmin, wpmax, name[i0], sample, era);
 	  }
   }
   else{
@@ -32,7 +33,7 @@ void makeDatacards(TString era, TString sample, TString wpmin, TString wpmax){
 }
 
 
-void makeOneDatacard(TString inputname, TString wpmin, TString wpmax, TString name_, TString sample, TString era) {
+void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name_, TString sample, TString era) {
   // Make a single datacard
   
   // make the configuration for this sample
@@ -41,19 +42,19 @@ void makeOneDatacard(TString inputname, TString wpmin, TString wpmax, TString na
   // set name and label
   TString algolabel = "particlenet";
   TString name = (TString)name_;
-  TString inputname_ = (TString)inputname;
+  TString workdir_ = (TString)workdir;
   
   // make output directory
-  const int dir_err = system("mkdir -p ./"+inputname_+"/fitdir/");
+  const int dir_err = system("mkdir -p " + workdir_+"/fitdir/");
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); }
 
   // initialize the datacard
-  std::ofstream out("./"+inputname_+"/fitdir/datacard_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".txt");
+  std::ofstream out(workdir_+"/fitdir/datacard_"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+".txt");
   std::streambuf *coutbuf = std::cout.rdbuf();
   std::cout.rdbuf(out.rdbuf());
 
   // get the histograms for pass 
-  TFile *f_p = TFile::Open((TString)inputname+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root","READONLY");
+  TFile *f_p = TFile::Open((TString)workdir+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root","READONLY");
   TH1D  *h_obs_p    = (TH1D*)f_p->Get("data_obs"); 
   TH1D  *h_top_p1_p = (TH1D*)f_p->Get("tp1");
   TH1D  *h_top_p2_p = (TH1D*)f_p->Get("tp2");
@@ -61,7 +62,7 @@ void makeOneDatacard(TString inputname, TString wpmin, TString wpmax, TString na
   TH1D  *h_other_p  = (TH1D*)f_p->Get("other");
   
   // get the histograms for fail
-  TFile *f_f = TFile::Open((TString)inputname+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_f.root","READONLY");
+  TFile *f_f = TFile::Open((TString)workdir+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_f.root","READONLY");
   TH1D  *h_obs_f    = (TH1D*)f_f->Get("data_obs");   
   TH1D  *h_top_p1_f = (TH1D*)f_f->Get("tp1");
   TH1D  *h_top_p2_f = (TH1D*)f_f->Get("tp2");
@@ -73,8 +74,8 @@ void makeOneDatacard(TString inputname, TString wpmin, TString wpmax, TString na
   std::cout << "kmax *  number of nuisance parameters (sources of systematical uncertainties)\n";
   std::cout << "------------\n";
 
-  std::cout << "shapes  *  pass  " << (TString)inputname << "/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_" << name << "_templates_p.root  $PROCESS $PROCESS_$SYSTEMATIC\n";
-  std::cout << "shapes  *  fail  " << (TString)inputname << "/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_" << name << "_templates_f.root  $PROCESS $PROCESS_$SYSTEMATIC\n";
+  std::cout << "shapes  *  pass  " << (TString)workdir << "/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_" << name << "_templates_p.root  $PROCESS $PROCESS_$SYSTEMATIC\n";
+  std::cout << "shapes  *  fail  " << (TString)workdir << "/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_" << name << "_templates_f.root  $PROCESS $PROCESS_$SYSTEMATIC\n";
   std::cout << "------------\n";
 
 
