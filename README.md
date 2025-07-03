@@ -52,59 +52,65 @@ For now, just use the ones prepared here (on `lxplus`): `/eos/user/b/bribeiro/Ha
 Use the script `runFullChain.py` to the full chain, from input files to scale factors, in one go.
 Use `python3 runFullChain.py -h` to see a list of all available options and a short explanation for each of them.
 The required arguments are:
-- `-c / --category`: define which tagger to use. Choose from `top` or `W`.
-- `-v / --version`: define which version of the tagger to use. Choose from `nominal` or `MD` (mass-decorrelated).
 - `-y / --year`: define which year to run on. Can also be multiple years separated by spaces.
+- `-w / --working_points`: path to a json file with working points. See [here](https://github.com/LukaLambrecht/ParticleNetSF/blob/ParticleNet_TopW_SFs_NanoV9/wps/wps_top.json) for an example of correct formatting.
 
-Notes:
-- Apart from providing command line arguments, small tweaks might be needed inside the "configuration.h" and "makeFits.C",
-  according to the category / version selected for the SF extraction (see also further below).
-  This is in the process of being streamlined, so that no additional tweaks are needed, but not yet completed.
+Further settings are also defined in `configuration.h`.
+For example:
+- the branch name of the ParticleNet score to use
+- whether to consider the top-merged or W-merged category as main process of interest in the fit
+- the binning in pT
+Make sure to check and modify as needed before running `runFullChain.py`.
 
 ### Create 2D histograms
 To speed up the process, steps can be run separately instead of in one go.
 The first step consists of making 2D histograms (as a function of m(jet) and pt(jet)) from the trees.
 ```
 root [0] .L make2DTemplates.C
-root [1] make2DTemplates("<year>", "tt1l", "<category>", "<minimum score>", "<maximum score>”)
+root [1] make2DTemplates("<year>", "tt1l", "<minimum score>", "<maximum score", "<output directory>")
 ```
+The resulting histograms are stored under `<chosen output directory>/templates2D`.
 
 ### Create 1D histograms:
 Next, the 2D histograms are projected onto 1D histograms in given bins of pt.
 ```
 root [0] .L make1DTemplates.C
-root [1] make1DTemplates("<year>", "tt1l", "<category>", "<minimum score>", "<maximum score>", false, "", "")
+root [1] make1DTemplates("<year>", "tt1l", "<minimum score>", "<maximum score>", false, "", "<output directory>")
 ```
-Where the last three arguments are for prefit and two dummy arguments that are not used (in prefit mode), respectively.
+Where the 5th argument (`false`) is for prefit and the 6th (`""`) is ignored in prefit mode.
 The version in postfit mode is called automatically from `makeFits.C` after doing the fit (see below).
+
+The chosen output directory should be the same one as in the previous step in order to find the correct input files.
+The resulting histograms are stored under `<output directory>/templates1D`.
 
 ### Create the datacards:
 Next, the datacards will be produced.
 ```
 root [0] .L makeDatacards.C
-root [1] makeDatacards("<year>", "tt1l", "<category>", "<minimum score>", "<maximum score>")
+root [1] makeDatacards("<year>", "tt1l", "<minimum score>", "<maximum score>", "<output directory>")
 ```
+
+The chosen output directory should be the same one as in the previous steps in order to find the correct input files.
+The resulting datacards are stored under `<output directory>/templates1D/fitdir`.
 
 ### Do the fit:
 Finally, the fits can be performed.
 ```
 root [0] .L makeFits.C
-root [1] makeFits("<year>", "<category>", "minimum_score", "maximum_score", "tt1l")
+root [1] makeFits("<year>", "tt1l", "minimum_score", "maximum_score", "<output directory>")
 ```
+
+The chosen output directory should be the same one as in the previous steps in order to find the correct input files.
+Most of the fit results are stored under `<output directory>/templates1D/fitdir`,
+except for the postfit plots, which are stored under `<output directory>/templates1D/postfit_plots`.
 
 ## Making modifications
 This paragraph lists the files and items that should be modified for some common changes.
-This is likely to be updated (for example for running on 2016 pre-VFP and post-VFP without having to change elements in the source code),
-but for now these are the steps to follow.
 
 To change the tagger being used:
-- Use the correct command line arguments to `runFullChain.py`. Valid choices are:
-  - `top nominal`
-  - `W nominal`
-  - `W MD`.
 - Modify `configuration.h`. In particular:
-  - algo
-  - score_def
+  - `score_def` (branch name of the score to use)
+  - if needed, also change `score_category` to switch between top-merged and W-merged
 
 To modify the binning in pt
 - Modify `configuration.h`. In particular:

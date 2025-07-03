@@ -21,7 +21,8 @@ namespace conf {
   
   TString brX; int binsX; float minX, maxX;
   TString brY; int binsY; float minY, maxY;
-  TString score_def; 
+  TString score_def;
+  TString score_category; 
   
   std::vector<TString> name; 
   std::vector<double>  ptmin; 
@@ -120,11 +121,11 @@ namespace conf {
     } // end of if sample == 'tt1l'
     
     // ParticleNet settings
-    // todo: these settings might conflict with the value provided
-    //       as a command-line argumgent to runFullChain.py, leading to bugs.
-    //       better to remove this setting from the configuration,
-    //       and consistently use the command-line argument everywhere.
+    // note: score_def should be the branch name of the score to use
+    // note: score_category should be "top" (tp3 is the main process of interest in the fit)
+    //       or "w" (tp2 is the main process of interest in the fit)
     score_def = "fj_1_ParticleNetMD_XccVsQCD";
+    score_category = "w";
 
     // binning
     // note: make sure the bin parameters are defined in a way

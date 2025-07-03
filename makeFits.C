@@ -14,12 +14,14 @@ void makeOneFit(std::string wordir, std::string era, std::string category,
 
 
 // main function
-void makeFits(std::string era, std::string sample, std::string category, std::string wpmin, std::string wpmax,
+void makeFits(std::string era, std::string sample,
+        std::string wpmin, std::string wpmax,
         std::string outputDir="."){
 
   // make the configuration for this sample
   conf::configuration(sample);
-  std::vector<TString> binnames  = conf::name;
+  std::vector<TString> binnames = conf::name;
+  TString category = conf::score_category;
   
   // define what to do based on sample
   // note: this is a relic from earlier development (?),
@@ -27,7 +29,7 @@ void makeFits(std::string era, std::string sample, std::string category, std::st
   if(sample=="tt1l"){
       for(TString binname: binnames){
           std::cout << "Running makeFits on bin " << binname << std::endl; 
-	      makeOneFit(outputDir, era, category, wpmin, wpmax, (std::string)binname);
+	      makeOneFit(outputDir, era, (std::string)category, wpmin, wpmax, (std::string)binname);
 	  } 
   }
   else{
