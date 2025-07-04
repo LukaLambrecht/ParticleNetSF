@@ -48,6 +48,9 @@ For now, just use the ones prepared here (on `lxplus`): `/eos/user/b/bribeiro/Ha
 
 ## How to run
 
+Note: always do `cmsenv` first in the correct `CMSSW_<...>/src` folder
+(i.e. the one where Combine was installed, see above), to set up the environment.
+
 ### Full chain
 Use the script `runFullChain.py` to the full chain, from input files to scale factors, in one go.
 Use `python3 runFullChain.py -h` to see a list of all available options and a short explanation for each of them.

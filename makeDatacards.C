@@ -99,6 +99,10 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   std::cout << "rate            -1 -1 -1 -1     -1 -1 -1 -1  \n"; 
   std::cout << "------------\n";
 
+  // todo: find out why these exact numbers (4, 3, 6, -7) were chosen for the process list.
+  //       presumably the numbers don't matter as the scaling for each category is defined
+  //       in the custom physics model (TagAndProbeExtended.py), but to double check.
+
 
   std::cout << "lumi            lnN      1.025 1.025 1.025 1.025     1.025 1.025 1.025 1.025 \n";
   std::cout << "\n";
