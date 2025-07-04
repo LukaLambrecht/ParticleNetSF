@@ -80,8 +80,8 @@ for year in args.year:
       
       # make the commands to run
       cmds = []
-      cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
-      cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{wp}", "1.00", false, "", "{args.outputdir}")' )
+      #cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
+      cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
       cmds.append( f'makeDatacards.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
       cmds.append( f'makeFits.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
      

@@ -110,7 +110,7 @@ namespace conf {
 
 	// list of systematic uncertainties
 	syst.push_back("_"); // this is for nominal
-	syst.push_back("pu"); 
+	/*syst.push_back("pu"); 
 	syst.push_back("jes"); 
 	syst.push_back("jer");
 	syst.push_back("met"); 
@@ -118,7 +118,7 @@ namespace conf {
 	syst.push_back("jmr");
 	syst.push_back("lhescalemuf");
 	syst.push_back("lhescalemur");
-	syst.push_back("lhepdf");
+	syst.push_back("lhepdf");*/
     
     } // end of if sample == 'tt1l'
     
@@ -142,9 +142,9 @@ namespace conf {
     //       with the ones from the previous step;
     //       for example: a pt bin of 300-325 GeV is not possible if the bins
     //       were defined with binsY = 4; minY = 200; maxY = 400;
-    //ptnames.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
-    //ptnames.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);  
-    //ptnames.push_back("pt400to800"); ptmin.push_back(400.); ptmax.push_back(800.);
+    ptnames.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
+    ptnames.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);  
+    ptnames.push_back("pt400to800"); ptmin.push_back(400.); ptmax.push_back(800.);
     ptnames.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
     
     legend_labels["tp3"] = "Top-merged";

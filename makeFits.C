@@ -27,9 +27,10 @@ void makeFits(std::string era, std::string sample,
   // note: this is a relic from earlier development (?),
   //       in practice the sample is always 'tt1l'. 
   if(sample=="tt1l"){
+      std::string outputSubDir = outputDir + "/templates1D";
       for(TString ptname: ptnames){
-          std::cout << "Running makeFits on pt bin " << ptname << std::endl; 
-	      makeOneFit(outputDir, era, (std::string)category, wpmin, wpmax, (std::string)ptname);
+          std::cout << "Running makeFits on pt bin " << ptname << std::endl;
+	      makeOneFit(outputSubDir, era, (std::string)category, wpmin, wpmax, (std::string)ptname);
 	  } 
   }
   else{
@@ -52,7 +53,7 @@ void makeOneFit(std::string workdir, std::string era, std::string category,
   }
 
   // set path to datacard, workspace, and output name
-  std::string fitdir = workdir + "/templates1D/fitdir";
+  std::string fitdir = workdir + "/fitdir";
   std::string algolabel = "particlenet";
   std::string fullname = algolabel + "_tt1l_" + wpmin + "to" + wpmax + "_" + era + "_" + binname;
   std::string datacard = fitdir + "/datacard_" + fullname + ".txt";
@@ -133,8 +134,8 @@ void makeOneFit(std::string workdir, std::string era, std::string category,
   
   // post fit plots
   TString cmd;
-  cmd = "make1DTemplates.C(\"'"+(TString)era+"'\",\"tt1l\",\"'"+(TString)wpmin+"'\",\"'"+(TString)wpmax+"'\",true,\"pass\",\""+(TString)workdir+"\")";
+  cmd = "makePostFitPlots.C(\"'"+(TString)era+"'\",\"tt1l\",\"'"+(TString)wpmin+"'\",\"'"+(TString)wpmax+"'\",\""+(TString)binname+"\",\"pass\",\""+(TString)workdir+"\")";
   system("root -l -q \'" + cmd + "\'");
-  cmd = "make1DTemplates.C(\"'"+(TString)era+"'\",\"tt1l\",\"'"+(TString)wpmin+"'\",\"'"+(TString)wpmax+"'\",true,\"fail\",\""+(TString)workdir+"\")";
+  cmd = "makePostFitPlots.C(\"'"+(TString)era+"'\",\"tt1l\",\"'"+(TString)wpmin+"'\",\"'"+(TString)wpmax+"'\",\""+(TString)binname+"\",\"fail\",\""+(TString)workdir+"\")";
   system("root -l -q \'" + cmd + "\'");
 }
