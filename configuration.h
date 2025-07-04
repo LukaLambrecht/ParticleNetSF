@@ -82,39 +82,43 @@ namespace conf {
 	//       (e.g. "ttbar-powheg" -> will look for ttbar-powheg.root).
 	// note: process_names should contain the given name of the process,
 	//       that will be used in all further steps.
+	// note: with the current set of input files, the "qcd-mg" samples
+	//       are missing from all years but 2016 (preVFP and postVFP),
+	//       and the "ttv" samples are missing in 2016 and 2017,
+	//       so disable them for now (for all years, for consistency). 
 	processes.push_back("ttbar-powheg"); process_names.push_back("tt"); 
 	processes.push_back("singletop");    process_names.push_back("st");
-	processes.push_back("ttv");          process_names.push_back("ttv");
+	//processes.push_back("ttv");          process_names.push_back("ttv");
 	processes.push_back("w");            process_names.push_back("wll");
 	processes.push_back("diboson");      process_names.push_back("vv");
 	//processes.push_back("qcd-mg");       process_names.push_back("qcd");
-	// (note: qcd seems to be absent from the input files, so cannot use)
 	
     // define which processes to split into p3, p2 and p1
+    // note: must be subset of the process names defined above.
     processes_splitting.push_back("tt");
     processes_splitting.push_back("st");
-    processes_splitting.push_back("ttv");
+    //processes_splitting.push_back("ttv");
 	
 	// define which processes to use for the 1D templates
 	// note: the input process names must correspond to (a subset of)
 	//       the process_names from the previous step,
-	//       but with the signal processes (tt, st, ttv) split in categories.
-    processes_grouping["tp3"] = {"tt_p3", "st_p3", "ttv_p3"};
-    processes_grouping["tp2"] = {"tt_p2", "st_p2", "ttv_p2"};
-    processes_grouping["tp1"] = {"tt_p1", "st_p1", "ttv_p1"};
-    processes_grouping["other"] = {"wll", "vv"};
+	//       but with the signal processes (usually tt, st, ttv) split in categories.
+    processes_grouping["tp3"] = {"tt_p3", "st_p3"}; // also ttv_p3 if the sample is used.
+    processes_grouping["tp2"] = {"tt_p2", "st_p2"}; // also ttv_p2 if the sample is used.
+    processes_grouping["tp1"] = {"tt_p1", "st_p1"}; // also ttv_p1 if the sample is used.
+    processes_grouping["other"] = {"wll", "vv"}; // also qcd if the sample is used.
 
 	// list of systematic uncertainties
 	syst.push_back("_"); // this is for nominal
-	//syst.push_back("pu"); 
-	//syst.push_back("jes"); 
-	//syst.push_back("jer");
-	//syst.push_back("met"); 
-	//syst.push_back("jms");
-	//syst.push_back("jmr");
-	//syst.push_back("lhescalemuf");
-	//syst.push_back("lhescalemur");
-	//syst.push_back("lhepdf");
+	syst.push_back("pu"); 
+	syst.push_back("jes"); 
+	syst.push_back("jer");
+	syst.push_back("met"); 
+	syst.push_back("jms");
+	syst.push_back("jmr");
+	syst.push_back("lhescalemuf");
+	syst.push_back("lhescalemur");
+	syst.push_back("lhepdf");
     
     } // end of if sample == 'tt1l'
     

@@ -64,6 +64,7 @@ For example:
 - whether to consider the top-merged or W-merged category as main process of interest in the fit
 - the binning in pT
 - which processes to take into account and how to group them
+
 Make sure to check and modify as needed before running `runFullChain.py`.
 
 ### Create 2D histograms
