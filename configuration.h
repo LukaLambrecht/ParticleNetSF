@@ -110,7 +110,7 @@ namespace conf {
 
 	// list of systematic uncertainties
 	syst.push_back("_"); // this is for nominal
-	/*syst.push_back("pu"); 
+	syst.push_back("pu"); 
 	syst.push_back("jes"); 
 	syst.push_back("jer");
 	syst.push_back("met"); 
@@ -118,7 +118,7 @@ namespace conf {
 	syst.push_back("jmr");
 	syst.push_back("lhescalemuf");
 	syst.push_back("lhescalemur");
-	syst.push_back("lhepdf");*/
+	syst.push_back("lhepdf");
     
     } // end of if sample == 'tt1l'
     
