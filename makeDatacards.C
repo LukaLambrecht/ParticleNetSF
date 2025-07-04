@@ -20,9 +20,9 @@ void makeDatacards(TString era, TString sample, TString wpmin, TString wpmax, TS
   // note: this is a relic from earlier development (?),
   //       in practice the sample is always 'tt1l'.
   if(sample=="tt1l"){
+      outputDir += "/templates1D";
       for(TString ptname: ptnames){
           std::cout << "Running makeDatacards on pt bin " << ptname << std::endl;
-          outputDir += "/templates1D";
 	      makeOneDatacard(outputDir, wpmin, wpmax, ptname, sample, era);
 	  }
   }

@@ -64,6 +64,8 @@ void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
         //       instead, the values are hard-coded here.
         TString ptmin = "200";
         TString ptmax = "1200";
+        // set sub directory in output directory
+        outputDir += "/templates2D";
         makeTemplatesTop(sample, era, wpmin, wpmax, conf::score_def, ptmin, ptmax, outputDir);    
     }
     else {
@@ -110,9 +112,8 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   std::cout << "Found following sample path: " << path << std::endl;
   std::cout << "Found following luminosity: " << intLumi << std::endl;
 
-  // set directory to store the templates
+  // set output file name
   // todo: maybe add score in output directory or file name to avoid confusion
-  outputDir += "/templates2D";
   TString nameoutfile = "particlenet_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+ptmin+"to"+ptmax+"_templates";
   
   // make output directory

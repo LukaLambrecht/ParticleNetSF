@@ -41,9 +41,9 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
   // handle postfit case
   // (just read the output from combine and make the plot)
   if (postfit){
-      if (sample == "tt1l"){ 
+      if (sample == "tt1l"){
+      outputDir += "/templates1D";
 	  for (int i0=0; i0<ptnames.size(); ++i0){
-          outputDir += "/templates1D";
 	      makeDataMCPlotFromCombine(outputDir, era, wpmin, wpmax, ptnames[i0], passOrFail,
             conf::minX, conf::maxX, conf::binsX, "m_{regressed} [GeV]", false, sample);
 	  }
@@ -62,6 +62,7 @@ void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
 	      std::cout << "Now running on pt bin " << ptnames[i0] << std::endl;
           TString inputFile = outputDir + "/templates2D/particlenet_"+sample+"_"+wpmin+"to"+wpmax+"_"+era+"_200to1200_templates.root";
           TString outputName = "particlenet_"+sample+"_"+wpmin+"to"+wpmax+"_"+era;
+          outputDir += "/templates1D";
 	      makeDataMCFrom2DTemplatesTop(inputFile, outputName, ptnames[i0], sample, ptmin[i0], ptmax[i0], outputDir);
 	  }
       }
@@ -86,7 +87,6 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   conf::configuration(path2file);
 
   // prepare directories
-  outputDir += "/templates1D";
   const int dir_err = system("mkdir -p " + outputDir);
   if (-1 == dir_err) { printf("Error creating directory!n"); exit(1); }
   nameoutfile = nameoutfile+"_"+name;
