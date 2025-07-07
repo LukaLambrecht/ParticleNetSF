@@ -60,8 +60,9 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   std::streambuf *coutbuf = std::cout.rdbuf();
   std::cout.rdbuf(out.rdbuf());
 
-  // get the histograms for pass 
-  TFile *f_p = TFile::Open(workdir+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root","READONLY");
+  // get the histograms for pass
+  TString inputFile = workdir+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root";
+  TFile *f_p = TFile::Open(inputFile, "READONLY");
   TH1D  *h_obs_p    = (TH1D*)f_p->Get("data_obs"); 
   TH1D  *h_top_p1_p = (TH1D*)f_p->Get("tp1");
   TH1D  *h_top_p2_p = (TH1D*)f_p->Get("tp2");
@@ -69,7 +70,8 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   TH1D  *h_other_p  = (TH1D*)f_p->Get("other");
   
   // get the histograms for fail
-  TFile *f_f = TFile::Open(workdir+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_f.root","READONLY");
+  inputFile = workdir+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_f.root";
+  TFile *f_f = TFile::Open(inputFile, "READONLY");
   TH1D  *h_obs_f    = (TH1D*)f_f->Get("data_obs");   
   TH1D  *h_top_p1_f = (TH1D*)f_f->Get("tp1");
   TH1D  *h_top_p2_f = (TH1D*)f_f->Get("tp2");
