@@ -134,3 +134,8 @@ To enable or disable systematics:
 
 To use different selections or matching criteria:
 - Modify `make2DTemplates.C`, in particular the definition of the cuts and criteria in the function `makeTemplatesTop`.
+
+## Further reading
+
+This method is described in AN-24-106, part of [HIG-25-001](https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-25-001&tp=an&id=2945&ancode=HIG-25-001).
+The same approach was also used in AN-21-004, part of [HIG-21-008](https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-21-008&tp=an&id=2441&ancode=HIG-21-008)
