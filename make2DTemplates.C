@@ -295,7 +295,7 @@ TH2D *create2Dhisto(TString sample, TTree *tree, TString intLumi, TString cuts,
   else                              { puWgt = "puWeight"; }
   // temporary fix for the fact that puWeight does not seem to be a valid branch
   // (todo: find out which branch (if any) to use later)
-  puWgt = "1.";
+  //puWgt = "1.";
 
   // set up correct gen weight
   TString genWgt = "xsecWeight*genWeight";
