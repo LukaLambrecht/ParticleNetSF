@@ -17,7 +17,7 @@
 // declare helper functions
 void setTDRStyle();
 TH1D *h1DHistoFrom2DTemplates(TString path2file,TString h2dname,TString name,double ymin, double ymax,int color,bool isdata);
-TCanvas *makeCanvasWithRatio(TH1D* hdata, std::vector<TH1D*> h1d, TString dir, TString name, TString xname, TString yname, TLegend *leg);
+TCanvas *makeCanvasWithRatio(TH1D* hdata, std::vector<TH1D*> h1d, TString name, TString xname, TString yname, TLegend *leg);
 void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TString ptname, TString sample, double ymin, double ymax, TString outputDir=".");
 
 
@@ -52,6 +52,7 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
         double ymin, double ymax,
         TString outputDir="."){
 
+  // standard ROOT settings
   TH1::SetDefaultSumw2(kTRUE);
   setTDRStyle();
   gROOT->SetBatch(true);
@@ -163,21 +164,23 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   } // end of loop over the categories
  
   // make a legend
-  TLegend* leg = new TLegend(0.33,0.62,0.92,0.90);
+  TLegend* leg = new TLegend(0.5, 0.6, 0.92, 0.85);
   leg->SetNColumns(2);
   leg->SetFillStyle(0);
   leg->SetFillColor(0);
   leg->SetLineWidth(0);
-  leg->AddEntry(h_data_p,"Data","PL");
+  leg->SetTextFont(42);
+  leg->AddEntry(h_data_p, "Data", "PL");
   for(unsigned int i0=0; i0<hist_out_nom_p.size(); ++i0){
       leg->AddEntry(hist_out_nom_p[i0], labels[i0], "F");
   }
 
   // make a plot
-  TCanvas *c_pass = makeCanvasWithRatio(h_data_p,hist_out_nom_p,"fit_"+sample+"_templates",name+"_pass","m_{regressed} [GeV]","Events / Bin",leg);  
+  TString xname = "m_{regressed} [GeV]";
+  TString yname = "Events / Bin";
+  TCanvas *c_pass = makeCanvasWithRatio(h_data_p, hist_out_nom_p, nameoutfile+"_pass", xname, yname, leg);  
   c_pass->Print(outputDir+"/"+nameoutfile+"_pass.png"); 
-  
-  TCanvas *c_fail = makeCanvasWithRatio(h_data_f,hist_out_nom_f,"fit_"+sample+"_templates",name+"_fail","m_{regressed} [GeV]","Events / Bin",leg);
+  TCanvas *c_fail = makeCanvasWithRatio(h_data_f, hist_out_nom_f, nameoutfile+"_fail", xname, yname, leg);
   c_fail->Print(outputDir+"/"+nameoutfile+"_fail.png");
   
   // write templates to ROOT file
@@ -203,81 +206,169 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
 }
 
 
-TCanvas *makeCanvasWithRatio(TH1D* hdata, std::vector<TH1D*> h1d, TString dir, TString name, TString xname, TString yname, TLegend *leg) {
+TCanvas *makeCanvasWithRatio(TH1D* hdata, std::vector<TH1D*> h1d, TString name, TString xname, TString yname, TLegend *leg) {
 
+  // standard ROOT settings
   TH1::SetDefaultSumw2(kTRUE);
   setTDRStyle();
   gROOT->SetBatch(true);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
   gStyle->SetPalette(1);
+  gStyle->SetErrorX(0);
 
-  THStack *hs = new THStack("hs_"+name,"hs_"+name);
+  // get some properties from the provided name
+  // (depends on naming convention, but only used for displaying on canvas)
+  std::stringstream namestream = (std::stringstream)(std::string)name;
+  std::string temp;
+  std::vector<std::string> parts;
+  char split = '_';
+  while( std::getline(namestream, temp, split) ){
+      parts.push_back(temp);
+  }
+  std::string wprange = parts[2];
+  wprange = std::regex_replace(wprange, std::regex("to"), " - ");
+  std::string era = parts[3];
+  std::string ptrange = parts[4];
+  ptrange = std::regex_replace(ptrange, std::regex("to"), " - ");
+  ptrange = std::regex_replace(ptrange, std::regex("pt"), "");
+  std::string cat = parts[5];
+
+  // make stack of predictions
+  THStack *hs = new THStack("hs_"+name, "hs_"+name);
   std::vector<TH1D*> histos; histos.clear();
-  for (int i0=0; i0<h1d.size(); ++i0) 
-    { 
+  for (int i0=0; i0<h1d.size(); ++i0){ 
       TString count = std::to_string(i0);
       hs->Add(h1d[i0]);
-      TH1D* h_ = (TH1D*)h1d[i0]->Clone("h_"+count); h_->SetFillColor(0); h_->SetLineStyle(2);
+      TH1D* h_ = (TH1D*)h1d[i0]->Clone("h_"+count);
+      h_->SetFillColor(0);
+      h_->SetLineStyle(2);
       histos.push_back(h_);
     }
-  
-  TH1D *h_sm = (TH1D*)h1d[0]->Clone("h_sm");
-  h_sm->Reset("ICES");
 
+  // make sum of predictions (to use later in ratio) 
+  TH1D *h_sum = (TH1D*)h1d[0]->Clone("h_sum");
+  h_sum->Reset("ICES");
+  for (int i0=0; i0<h1d.size(); ++i0){ h_sum->Add(h1d[i0]); }
+
+  // initialize canvas and pads
   TCanvas *c_ = new TCanvas("c_"+name,"c_"+name,600,600); c_->SetName("c_"+name);
-  TPad *pMain  = new TPad("pMain_"+name,"pMain+"+name,0.0,0.35,1.0,1.0);
+  TPad *pMain  = new TPad("pMain_"+name, "pMain+"+name, 0.0, 0.35, 1.0, 1.0);
   pMain->SetRightMargin(0.05);
   pMain->SetLeftMargin(0.17);
-  pMain->SetBottomMargin(0.03);
-  pMain->SetTopMargin(0.05);
-  TPad *pRatio = new TPad("pRatio_"+name,"pRatio_"+name,0.0,0.03,1.0,0.37);
+  pMain->SetBottomMargin(0.05);
+  pMain->SetTopMargin(0.1);
+  TPad *pRatio = new TPad("pRatio_"+name, "pRatio_"+name, 0.0, 0.03, 1.0, 0.37);
   pRatio->SetRightMargin(0.05);
   pRatio->SetLeftMargin(0.17);
-  pRatio->SetTopMargin(0.);
+  pRatio->SetTopMargin(0.05);
   pRatio->SetBottomMargin(0.39);
   pMain->Draw();
   pRatio->Draw();
 
+  // switch to upper pad
   pMain->cd();
-  hdata->GetXaxis()->SetTitle(xname);
-  hdata->GetYaxis()->SetTitle(yname);
 
-  if (name.Contains("pass")) { hdata->GetYaxis()->SetRangeUser(0.,1.8*hdata->GetMaximum()); }
-  else { hdata->GetYaxis()->SetRangeUser(0.,1.8*hdata->GetMaximum()); }
-  hdata->Draw("P E0");
+  // upper pad axis layout
+  hdata->GetXaxis()->SetLabelSize(0);
+  hdata->GetYaxis()->SetTitle(yname);
+  hdata->GetYaxis()->SetTitleSize(0.06);
+  hdata->GetYaxis()->SetTitleOffset(1);
+  hdata->GetYaxis()->SetLabelSize(0.05);
+
+  // upper pad y-axis range
+  if (name.Contains("pass")) { hdata->GetYaxis()->SetRangeUser(0.,2*hdata->GetMaximum()); }
+  else { hdata->GetYaxis()->SetRangeUser(0.,2*hdata->GetMaximum()); }
+  hdata->Draw("P E0 X0");
   
-  for (int i0=0; i0<h1d.size(); ++i0) { h1d[i0]->Draw("HIST E0 sames"); h_sm->Add(h1d[i0]); }
-  // data mc ratio                                                                           
-  TH1F *h_r = (TH1F*)hdata->Clone("h_"+name+"_r"); h_r->Divide(hdata,h_sm);
+  // make data mc ratio                                                                           
+  TH1F *h_r = (TH1F*)hdata->Clone("h_"+name+"_r"); h_r->Divide(hdata,h_sum);
+
+  // write CMS name
+  TPaveText *pt_cms = new TPaveText(0.17, 0.82, 0.6, 0.9, "NDC");
+  pt_cms->SetFillStyle(0);
+  pt_cms->SetFillColor(0);
+  pt_cms->SetLineWidth(0);
+  pt_cms->SetTextAlign(12);
+  pt_cms->AddText("CMS");
+
+  // write extra text
+  TPaveText *pt_preliminary = new TPaveText(0.17, 0.76, 0.6, 0.81, "NDC");
+  pt_preliminary->SetFillStyle(0);
+  pt_preliminary->SetFillColor(0);
+  pt_preliminary->SetLineWidth(0);
+  pt_preliminary->SetTextAlign(12);
+  pt_preliminary->AddText("Preliminary");
+  pt_preliminary->SetTextFont(52);
+
+  // write extra info
+  TPaveText *pt_info = new TPaveText(0.17, 0.5, 0.6, 0.75, "NDC");
+  pt_info->SetFillStyle(0);
+  pt_info->SetFillColor(0);
+  pt_info->SetLineWidth(0);
+  pt_info->SetTextAlign(12);
+  pt_info->SetTextFont(42);
+  pt_info->AddText(("Year: " + era).c_str());
+  pt_info->AddText(("WP: " + wprange).c_str());
+  pt_info->AddText(("pt: " + ptrange).c_str());
+  pt_info->AddText(("Cat: " + cat).c_str());
+
+  // draw lumi header
+  TLatex lumiHeader;
+  std::string lumiHeaderText = "";
+  if (era=="2016preVFP") { lumiHeaderText = "2016-preVFP, 19.52 fb^{-1}, 13 TeV"; }
+  else if (era=="2016postVFP") { lumiHeaderText = "2016-postVFP, 16.81 fb^{-1}, 13 TeV"; }
+  else if (era=="2017") { lumiHeaderText = "2017, 41.53 fb^{-1}, 13 TeV"; }
+  else if (era=="2018") { lumiHeaderText = "2018, 59.74 fb^{-1}, 13 TeV"; }
+  else if (era=="2022preEE") { lumiHeaderText = "2022-preEE, 7.98 fb^{-1}, 13.6 TeV"; }
+  else if (era=="2022postEE") { lumiHeaderText = "2022-postEE, 26.67 fb^{-1}, 13.6 TeV"; }
+  else if (era=="2023preBPix") { lumiHeaderText = "2023-preBPix, 18.08 fb^{-1}, 13.6 TeV"; }
+  else if (era=="2023postBPix") { lumiHeaderText = "2023-postBPix, 9.69 fb^{-1}, 13.6 TeV"; }
+  else { lumiHeaderText = "<year>, xx fb^{-1}, yy TeV"; }
+  lumiHeader.SetTextSize(0.06);
+  lumiHeader.SetTextFont(42);
+  lumiHeader.SetTextAlign(31);
   
-  // continue drawing                                                                                                                                                                                    
+  // upper pad: draw all objects in correct order
   hs->Draw("HIST E0 sames");
-  hdata->Draw("P E0 sames");
+  hdata->Draw("P E0 X0 sames");
   leg->Draw("sames");
+  pt_cms->Draw("sames");
+  pt_preliminary->Draw("sames");
+  pt_info->Draw("sames");
+  lumiHeader.DrawLatexNDC(0.95, 0.92, lumiHeaderText.c_str());
   c_->RedrawAxis();
   pMain->RedrawAxis();
 
+  // switch to lower pad
   pRatio->cd();
-  
-  h_r->GetYaxis()->SetTitleOffset(0.9);
-  h_r->GetYaxis()->SetTitleSize(0.1);
-  h_r->GetYaxis()->SetLabelSize(0.08);
-  h_r->GetXaxis()->SetTitleSize(0.2);
-  h_r->GetXaxis()->SetLabelSize(0.12);
-  h_r->GetXaxis()->SetTitle(xname);
-  h_r->GetYaxis()->SetTitle("Data / MC");
-  h_r->GetYaxis()->SetRangeUser(0.31,1.69);
-  h_r->Draw("P E0");
 
-  TAxis* xaxis = h_r->GetXaxis(); // get the X-axis object                                                                                                                                         
-  Double_t xmin = xaxis->GetXmin(); // get the X-axis minimum                                                                                                                                        
-  Double_t xmax = xaxis->GetXmax();
-  
+  // ratio hist layout
+  h_r->SetMarkerSize(1.);
+
+  // lower pad axis layout
+  h_r->GetYaxis()->SetTitleOffset(0.7);
+  h_r->GetYaxis()->SetTitleSize(0.1);
+  h_r->GetYaxis()->SetTitle("Data / MC");
+  h_r->GetYaxis()->SetLabelSize(0.1);
+  h_r->GetXaxis()->SetTitleSize(0.15);
+  h_r->GetXaxis()->SetTitleOffset(1.);
+  h_r->GetXaxis()->SetTitle(xname);
+  h_r->GetXaxis()->SetLabelSize(0.12);
+  h_r->GetYaxis()->SetRangeUser(0.31,1.69);
+  h_r->Draw("P E0 X0");
+
+  // draw horizontal line at unit ratio
+  Double_t xmin = h_r->GetXaxis()->GetXmin(); 
+  Double_t xmax = h_r->GetXaxis()->GetXmax();
   TLine* line = new TLine(xmin,1,xmax,1);
-  line->SetLineColor(kRed);
+  line->SetLineColor(kRed+2);
+  line->SetLineStyle(9);
   line->SetLineWidth(2);
   line->Draw("same");
+
+  // re-draw the data to bring it to the foreground
+  h_r->Draw("same P E0 X0");
   return c_;  
 }
 
