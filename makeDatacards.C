@@ -116,7 +116,7 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   
   std::cout << "\n";
 
-  /*std::cout << "tp3jms       shapeU    1 - - -     1 - - - \n";  
+  std::cout << "tp3jms       shapeU    1 - - -     1 - - - \n";  
   std::cout << "tp2jms       shapeU    - 1 - -     - 1 - - \n";
   std::cout << "tp1jms       shapeU    - - 1 -     - - 1 - \n";
   std::cout << "otherjms     shapeU    - - - 1     - - - 1 \n";
@@ -132,7 +132,7 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   std::cout << "met         shape    1 1 1 1     1 1 1 1 \n";
   std::cout << "lhescalemuf shape    1 1 1 1     1 1 1 1 \n";
   std::cout << "lhescalemur shape    1 1 1 1     1 1 1 1 \n";
-  //std::cout << "lhepdf      shape    1 1 1 1     1 1 1 1 \n";*/
+  //std::cout << "lhepdf      shape    1 1 1 1     1 1 1 1 \n";
     
   std::cout << "norm_top    rateParam    pass    tp3      1   [0.,10.]\n";
   std::cout << "norm_top    rateParam    fail    tp3      1   [0.,10.]\n";
