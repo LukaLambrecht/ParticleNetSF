@@ -90,9 +90,18 @@ if __name__=='__main__':
                 continue
             data[year][wp][ptbin][poi] = params[poi]
 
-    # to do:
-    # - sort pt so that the combined pt range comes after all separate bins
-    # - sort years so that preX comes before postX
+    # sort pt bins
+    ptmins = [float(ptbin.split('to')[0].replace('pt', '')) for ptbin in ptbins]
+    ptmaxs = [float(ptbin.split('to')[1].replace('pt', '')) for ptbin in ptbins]
+    ptbins_sorted = [(ptbin, ptmin, ptmax) for ptbin, ptmin, ptmax in zip(ptbins, ptmins, ptmaxs)]
+    ptbins_sorted = sorted(ptbins_sorted, key=lambda x: (x[2], -x[1]))
+    ptbins_sorted = [ptbin[0] for ptbin in ptbins_sorted]
+    ptbins = ptbins_sorted
+
+    # sort the years
+    years_sorted = sorted([y.replace('pre','xxx').replace('post', 'zzz') for y in years])
+    years_sorted = [y.replace('xxx', 'pre').replace('zzz', 'post') for y in years_sorted]
+    years = years_sorted
 
     # make plots
     # one plot per working point and parameter of interest, plotting years and pt-bins
