@@ -54,79 +54,82 @@ namespace conf {
     // and in practice it is true for every sample.
 
     // set path to input files
-	path_2016preVFP = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2016preVFP/";
-	path_2016postVFP = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2016postVFP/";
-	path_2017 = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2017/";
-	path_2018 = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2018/";
-	path_2022preEE = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2022preEE/";
+    path_2016preVFP = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2016preVFP/";
+    path_2016postVFP = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2016postVFP/";
+    path_2017 = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2017/";
+    path_2018 = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2018/";
+    path_2022preEE = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2022preEE/";
     path_2022postEE = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2022postEE/";
     path_2023preBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023preBPix/";
     path_2023postBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023postBPix/";
-	
+    
     // set input collection
-	jetCone    = "ak15";
-	jet_prefix = "fj_1_";
+    jetCone    = "ak15";
+    jet_prefix = "fj_1_";
     
     // set input variables
-	brX = jet_prefix + "regressed_mass"; 
-	brY = jet_prefix + "pt";
+    brX = jet_prefix + "regressed_mass"; 
+    brY = jet_prefix + "pt";
 
-    // clear any previously stored variables	
-	processes.clear();
-	process_names.clear();
-	processes_in.clear();
-	syst.clear();
-	
-	// define which processes to use for the 2D templates
-	// note: processes should contain the file name
-	//       (e.g. "ttbar-powheg" -> will look for ttbar-powheg.root).
-	// note: process_names should contain the given name of the process,
-	//       that will be used in all further steps.
-	// note: with the current set of input files, the "qcd-mg" samples
-	//       are missing from all years but 2016 (preVFP and postVFP),
-	//       and the "ttv" samples are missing in 2016 and 2017,
-	//       so disable them for now (for all years, for consistency). 
-	processes.push_back("ttbar-powheg"); process_names.push_back("tt"); 
-	processes.push_back("singletop");    process_names.push_back("st");
-	//processes.push_back("ttv");          process_names.push_back("ttv");
-	processes.push_back("w");            process_names.push_back("wll");
-	processes.push_back("diboson");      process_names.push_back("vv");
-	//processes.push_back("qcd-mg");       process_names.push_back("qcd");
-	
+    // clear any previously stored variables    
+    processes.clear();
+    process_names.clear();
+    processes_in.clear();
+    syst.clear();
+    
+    // define which processes to use for the 2D templates
+    // note: processes should contain the file name
+    //       (e.g. "ttbar-powheg" -> will look for ttbar-powheg.root).
+    // note: process_names should contain the given name of the process,
+    //       that will be used in all further steps.
+    // note: with the current set of input files, the "qcd-mg" samples
+    //       are missing from all years but 2016 (preVFP and postVFP),
+    //       and the "ttv" samples are missing in 2016 and 2017,
+    //       so disable them for now (for all years, for consistency). 
+    processes.push_back("ttbar-powheg"); process_names.push_back("tt"); 
+    processes.push_back("singletop");    process_names.push_back("st");
+    //processes.push_back("ttv");          process_names.push_back("ttv");
+    processes.push_back("w");            process_names.push_back("wll");
+    processes.push_back("diboson");      process_names.push_back("vv");
+    //processes.push_back("qcd-mg");       process_names.push_back("qcd");
+    
     // define which processes to split into p3, p2 and p1
     // note: must be subset of the process names defined above.
     processes_splitting.push_back("tt");
     processes_splitting.push_back("st");
     //processes_splitting.push_back("ttv");
-	
-	// define which processes to use for the 1D templates
-	// note: the input process names must correspond to (a subset of)
-	//       the process_names from the previous step,
-	//       but with the signal processes (usually tt, st, ttv) split in categories.
+    
+    // define which processes to use for the 1D templates
+    // note: the input process names must correspond to (a subset of)
+    //       the process_names from the previous step,
+    //       but with the signal processes (usually tt, st, ttv) split in categories.
     processes_grouping["tp3"] = {"tt_p3", "st_p3"}; // also ttv_p3 if the sample is used.
     processes_grouping["tp2"] = {"tt_p2", "st_p2"}; // also ttv_p2 if the sample is used.
     processes_grouping["tp1"] = {"tt_p1", "st_p1"}; // also ttv_p1 if the sample is used.
     processes_grouping["other"] = {"wll", "vv"}; // also qcd if the sample is used.
 
-	// list of systematic uncertainties
-	syst.push_back("_"); // this is for nominal
-	syst.push_back("pu"); 
-	syst.push_back("jes"); 
-	syst.push_back("jer");
-	syst.push_back("met"); 
-	syst.push_back("jms");
-	syst.push_back("jmr");
-	syst.push_back("lhescalemuf");
-	syst.push_back("lhescalemur");
-	syst.push_back("lhepdf");
+    // list of systematic uncertainties
+    syst.push_back("_"); // this is for nominal
+    syst.push_back("pu"); 
+    syst.push_back("jes"); 
+    syst.push_back("jer");
+    syst.push_back("met"); 
+    syst.push_back("jms");
+    syst.push_back("jmr");
+    syst.push_back("lhescalemuf");
+    syst.push_back("lhescalemur");
+    syst.push_back("lhepdf");
     
     } // end of if sample == 'tt1l'
     
-    // ParticleNet settings
+    // score settings
     // note: score_def should be the branch name of the score to use
     // note: score_category should be "top" (tp3 is the main process of interest in the fit)
     //       or "w" (tp2 is the main process of interest in the fit)
-    score_def = "fj_1_ParticleNetMD_XccVsQCD";
+    // note: historically, ParticleNet was used for the score,
+    //       in particular the branch fj_1_ParticleNetMD_XccVsQCD;
+    //       now switching to ParticleTransformer.
+    score_def = "fj_1_ParT_HccVsQCD";
     score_category = "w";
 
     // binning
