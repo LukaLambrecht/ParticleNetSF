@@ -1,4 +1,4 @@
-# Jet mass scale and resolution factors for ParticleNet jets
+# Jet mass scale and resolution scale factors for ParticleNet jets
 
 ## How to install
 
