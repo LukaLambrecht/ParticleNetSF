@@ -56,7 +56,7 @@ class TagAndProbeExtended(PhysicsModel):
         # note: these variables have no physical meaning yet, they are just declared.
         pois = []
         for cat in self._categories:
-            self.modelBuilder.doVar("SF_%s[1,0.,2]" % cat)
+            self.modelBuilder.doVar("SF_%s[1.,0.,3.]" % cat)
             pois.append('SF_%s' % cat)
         self.modelBuilder.doSet("POI", ','.join(pois))
 

@@ -32,22 +32,36 @@ def load_impacts_json(inputfile):
     return params_dict
     
 
-def plot_scalefactors(ydata, primary_xticklabels=None, secondary_xticklabels=None):
+def plot_scalefactors(ydata, fig=None, ax=None,
+        primary_xticklabels=None, secondary_xticklabels=None,
+        horizontal_shift=None,
+        **kwargs):
 
-    fig, ax = plt.subplots(figsize=(10,4))
-    xax = np.arange(len(ydata))
+    # initialize the figure
+    if fig is None or ax is None: fig, ax = plt.subplots(figsize=(10,4))
+
+    # make the x-axis
+    xax = np.arange(len(ydata)).astype(float)
+    if horizontal_shift is None:
+        horizontal_shift = 0.
+
+    # format the y-values
     central_values = [el[1] for el in ydata]
     error_up = [el[2] - el[1] for el in ydata]
     error_down = [el[1] - el[0] for el in ydata]
-    ax.errorbar(xax, central_values, yerr = [error_down, error_up], fmt='o', linestyle='none', capsize=5)
-    ax.set_xlim((-0.5, len(ydata)-0.5))
+
+    # make the base plot
+    ax.errorbar(xax + horizontal_shift, central_values, yerr = [error_down, error_up], fmt='o', linestyle='none', capsize=5, **kwargs)
+    ax.set_xlim((-0.5, len(ydata)))
     ax.set_ylim((-2, 2))
+    
+    # plot aesthetics
     if primary_xticklabels is not None:
         ax.set_xticks(ticks=xax, labels=primary_xticklabels, rotation=60, ha='right')
     if secondary_xticklabels is not None:
         for xval, label in secondary_xticklabels.items():
-            ax.text(xval-0.45, -1.95, label, ha='left', va='bottom')
-            ax.axvline(xval-0.5, color='grey', linestyle='--')
+            ax.text(xval-0.15, -1.95, label, ha='left', va='bottom')
+            ax.axvline(xval-0.2, color='grey', linestyle='--')
     ax.set_ylabel('Scale factor')
     ax.grid()
     fig.tight_layout()
@@ -62,7 +76,7 @@ if __name__=='__main__':
 
     # other settings
     # (hard-coded)
-    pois = ['lumi']
+    pois = ['tp2jms', 'tp2jmr']
 
     # read all data in a convenient structure
     data = {}
@@ -118,6 +132,11 @@ if __name__=='__main__':
                     if ptbin not in data[year][wp].keys(): continue
                     ptlabel = 'pT ' + ptbin.replace('pt', '').replace('to', ' - ')
                     ptticklabels.append(ptlabel)
+                    if poi not in data[year][wp][ptbin].keys():
+                        msg = f'WARNING: parameter {poi} not found for year {year}, WP {wp}, pt-bin {ptbin}.'
+                        print(msg)
+                        ydata.append((0,0,0))
+                        continue
                     ydata.append(data[year][wp][ptbin][poi])
             # make a plot
             fig, ax = plot_scalefactors(ydata, primary_xticklabels=ptticklabels,
@@ -126,3 +145,51 @@ if __name__=='__main__':
             ax.text(0.02, 1.02, f'POI: {poi}, WP: {wplabel}', transform=ax.transAxes)
             fig.tight_layout()
             fig.savefig(f'test_{poi}_{wp}.png')
+
+    # make plots
+    # one plot per parameter of interest, plotting years and pt-bins, and overlaying working points
+    for poi in pois:
+        
+        # initializations
+        fig = None
+        ax = None
+
+        # make colors
+        cmap = plt.get_cmap('cool')
+        cvals = np.linspace(0, 1, num=len(wps), endpoint=True)
+        colors = {wp: cmap(cvals[cidx]) for cidx, wp in enumerate(wps)}
+
+        # make horizontal shifts
+        hshifts = np.linspace(0, 0.5, num=len(wps), endpoint=True)
+        hshifts = {wp: hshifts[idx] for idx, wp in enumerate(wps)}
+        
+        for wp in wps:
+            # get the data
+            ptticklabels = []
+            yearticklabels = {}
+            ydata = []
+            for year in years:
+                if wp not in data[year].keys(): continue
+                yearticklabels[len(ydata)] = year
+                for ptbin in ptbins:
+                    if ptbin not in data[year][wp].keys(): continue
+                    ptlabel = 'pT ' + ptbin.replace('pt', '').replace('to', ' - ')
+                    ptticklabels.append(ptlabel)
+                    if poi not in data[year][wp][ptbin].keys():
+                        msg = f'WARNING: parameter {poi} not found for year {year}, WP {wp}, pt-bin {ptbin}.'
+                        print(msg)
+                        ydata.append((0,0,0))
+                        continue
+                    ydata.append(data[year][wp][ptbin][poi])
+            # make a plot
+            wplabel = 'WP: ' + wp.replace('to', ' - ')
+            fig, ax = plot_scalefactors(ydata,
+                        fig=fig, ax=ax,
+                        label=wplabel, color=colors[wp],
+                        horizontal_shift=hshifts[wp],
+                        primary_xticklabels=ptticklabels,
+                        secondary_xticklabels=yearticklabels)
+        ax.legend(ncols=len(wps))
+        ax.text(0.02, 1.02, f'POI: {poi}', transform=ax.transAxes)
+        fig.tight_layout()
+        fig.savefig(f'test_{poi}.png')

@@ -95,9 +95,12 @@ void makeOneFit(std::string workdir, std::string era, std::string category,
   if(doImpacts){
 
   // make impacts commands
-  std::string impacts_1 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 --doInitialFit --robustFit 1 --exclude 'rgx{prop.*}'";
-  std::string impacts_2 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 --robustFit 1 --doFits --parallel 60 --exclude 'rgx{prop.*}'";
-  std::string impacts_3 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 -o impacts_" + fullname + ".json --exclude 'rgx{prop.*}'";
+  std::string impacts_1 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 --doInitialFit"
+    + " --robustFit 1 --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 5. --exclude 'rgx{prop.*}'";
+  std::string impacts_2 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 --doFits"
+    + " --robustFit 1 --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 5. --exclude 'rgx{prop.*}' --parallel 60";
+  std::string impacts_3 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 -o impacts_" + fullname + ".json"
+    + " --robustFit 1 --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 5. --exclude 'rgx{prop.*}'";
   std::string impacts_4 = "plotImpacts.py -i impacts_" + fullname + ".json -o impacts_" + fullname;
   std::string impacts_5 = "mv impacts_" + fullname + ".pdf " + fitdir;
   std::string impacts_6 = "mv impacts_" + fullname + ".json " + fitdir;

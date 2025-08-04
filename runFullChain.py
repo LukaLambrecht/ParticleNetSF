@@ -62,6 +62,10 @@ with open(args.working_points, 'r') as f:
 print(f'Read the following working points from {args.working_points}:')
 print(json.dumps(working_points, indent=2))
 
+# parse years
+if 'all' in args.year:
+    args.year = list(working_points.keys())
+
 # check if all requested years are present in the working point dict
 for year in args.year:
     if year not in working_points.keys():
@@ -80,8 +84,8 @@ for year in args.year:
       
       # make the commands to run
       cmds = []
-      cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
-      cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
+      #cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
+      #cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
       cmds.append( f'makeDatacards.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
       cmds.append( f'makeFits.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
      
