@@ -16,13 +16,15 @@ if __name__=='__main__':
 
     #define working points for specific year and tagger
     if args.tagger == 'w_md':
-        pTrange = ['pt200to300', 'pt300to400', 'pt400to800', 'pt300to800', 'pt200to800']
+        pTrange = ['pt200to300', 'pt300to400', 'pt400to800', 'pt200to800']
         if args.year == '2016preVFP':
-            wp = [0.637, 0.845, 0.910]
-        elif args.year == '2016postVFP':
-            wp = [0.642, 0.842, 0.907]
-        elif args.year == '2017':
-            wp = [0.579, 0.810, 0.891]
+            wp = [0.7, 0.8, 0.923]
+        else:
+            wp = [0.7, 0.8, 0.923]
+        #elif args.year == '2016postVFP':
+        #    wp = [0.642, 0.842, 0.907]
+        #elif args.year == '2017':
+        #    wp = [0.579, 0.810, 0.891]
     elif args.tagger == 'w_nominal':
         pTrange = ['pt200to300', 'pt300to400', 'pt400to800', 'pt300to800', 'pt200to800']
         if args.year == '2016preVFP':
@@ -45,14 +47,14 @@ if __name__=='__main__':
             if args.tagger == 'w_md':
 
                 #define and open the input file
-                filestring = f"impacts_particlenetmd_tt1l_w_{i:.3f}to1.00_{year[0:4]}_{pt}.json"
+                filestring = f"impacts_particlenet_tt1l_{i}to1.00_{year}_{pt}.json"
                 with open(filestring, 'r') as f:
                     obj=json.load(f)
                 
                 #define output file name
-                outfileStr=f"wp_{i:.3f}to1.00_{tagger}_{year}_{jettype}_{pt}_jms_jmr.txt" 
+                outfileStr=f"wp_{i}to1.00_{tagger}_{year}_{jettype}_{pt}_jms_jmr.txt" 
                 txtout=open(outfileStr,"w")
-                txtout.write(f"{year} {i:.3f}to1.00 {tagger} {pt} {jettype}")
+                txtout.write(f"{year} {i}to1.00 {tagger} {pt} {jettype}")
                 txtout.write("\n")
 
                 params_dict = {param["name"]: param["fit"]
@@ -62,10 +64,14 @@ if __name__=='__main__':
                     jmsname = name + 'jms'
                     jmrname = name + 'jmr' 
                     # write jms
-                    txtout.write(f"{jmsname}:")
-                    txtout.write("\n SF: ")
+                    #txtout.write(f"{jmsname}:")
+                    #txtout.write("\n SF: ")
+                    #txtout.write(f"{params_dict.get(jmsname)[1]}")
                     fit = params_dict.get(jmsname)
                     if fit:
+                        txtout.write(f"{jmsname}:")
+                        txtout.write("\n SF: ")
+                        txtout.write(f"{params_dict.get(jmsname)[1]}")
                         txtout.write("\n Down Uncertainty: ")
                         txtout.write(f"{params_dict.get(jmsname)[0]-params_dict.get(jmsname)[1]}")
                         txtout.write("\n Up Uncertainty: ")
@@ -79,13 +85,27 @@ if __name__=='__main__':
                     txtout.write("\n")
                     txtout.write("\n")
                     # write jmr
-                    txtout.write(f"{jmrname}:")
-                    txtout.write("\n SF: ")
-                    txtout.write(f"{1+params_dict.get(jmrname)[1]}")
-                    txtout.write("\n Down Uncertainty: ")
-                    txtout.write(f"{params_dict.get(jmrname)[0]-params_dict.get(jmrname)[1]}")
-                    txtout.write("\n Up Uncertainty: ")
-                    txtout.write(f"{params_dict.get(jmrname)[2]-params_dict.get(jmrname)[1]}")
+                    #txtout.write(f"{jmrname}:")
+                    #txtout.write("\n SF: ")
+                    #txtout.write(f"{params_dict.get(jmrname)[1]}")
+                    fit = params_dict.get(jmrname)
+                    if fit:
+                        txtout.write(f"{jmrname}:")
+                        txtout.write("\n SF: ")
+                        txtout.write(f"{params_dict.get(jmrname)[1]}")
+                        txtout.write("\n Down Uncertainty: ")
+                        txtout.write(f"{params_dict.get(jmrname)[0]-params_dict.get(jmrname)[1]}")
+                        txtout.write("\n Up Uncertainty: ")
+                        txtout.write(f"{params_dict.get(jmrname)[2]-params_dict.get(jmrname)[1]}")
+                    else:
+                        txtout.write(f"{jmrname}: not found\n\n")
+                    #txtout.write(f"{jmrname}:")
+                    #txtout.write("\n SF: ")
+                    #txtout.write(f"{1+params_dict.get(jmrname)[1]}")
+                    #txtout.write("\n Down Uncertainty: ")
+                    #txtout.write(f"{params_dict.get(jmrname)[0]-params_dict.get(jmrname)[1]}")
+                    #txtout.write("\n Up Uncertainty: ")
+                    #txtout.write(f"{params_dict.get(jmrname)[2]-params_dict.get(jmrname)[1]}")
                     txtout.write("\n")
                     txtout.write("\n")
                 txtout.close()
