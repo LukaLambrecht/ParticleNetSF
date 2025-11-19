@@ -133,7 +133,7 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
                    + " && abs(fj_1_eta)<2.4 && leptonicW_pt>150.)";
   TString c_p3 = TString("( (fj_1_dr_T_Wq_max<") + jetRadius + ")"
                  + " && (fj_1_dr_T_b<" + jetRadius + ") )";
-  TString c_p2 = TString("((fj_1_T_Wq_max_pdgId==0 && fj_1_dr_W_daus<" + jetRadius + ")"
+  TString c_p2 = TString("((fj_1_T_Wq_max_pdgId==0") + " && fj_1_dr_W_daus<" + jetRadius + ")"
                  + " || (fj_1_T_Wq_max_pdgId!=0 && fj_1_dr_T_b>=" + jetRadius + " && fj_1_dr_T_Wq_max<" + jetRadius + "))";
   TString c_p1 = "(!("+c_p3+" || "+c_p2+"))";
 
