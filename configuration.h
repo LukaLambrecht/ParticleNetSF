@@ -38,17 +38,13 @@ namespace conf {
   TString path_2023preBPix;
   TString path_2023postBPix;
 
-  TString jetCone;
+  TString jet_radius;
 
   void configuration(TString sample) {
     // Helper function to define configuration parameters for a given sample.
     // Note: this is probably a relic from earlier development (?),
     //       and in practice only the sample name 'tt1l' is used, for all samples.
 
-    TString jet_prefix;
-
-    // =================== area to modify - tune ===================== //
-   
     if (sample == "tt1l"){
     // note: see above, this if-statement is probably a relic from earlier development,
     // and in practice it is true for every sample.
@@ -63,11 +59,13 @@ namespace conf {
     path_2023preBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023preBPix/";
     path_2023postBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023postBPix/";
     
-    // set input collection
-    jetCone    = "ak15";
-    jet_prefix = "fj_1_";
+    // set jet radius
+    // note: this is only used to make the split into top-merged, W-merged and non-merged at gen-level;
+    //       the radius of the reco-level jets is already set in the input files.
+    jet_radius = "1.5";
     
     // set input variables
+    TString jet_prefix = "fj_1_";
     brX = jet_prefix + "regressed_mass"; 
     brY = jet_prefix + "pt";
 
@@ -159,8 +157,6 @@ namespace conf {
     colors["tp2"] = 7;
     colors["tp1"] = 595;
     colors["other"] = 6;
-
-    // =================== end of area to modify - tune ===================== //
   }   
 
   TString convertFloatToTString(float input) {

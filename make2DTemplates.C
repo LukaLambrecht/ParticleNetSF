@@ -27,7 +27,8 @@ TH2D *create2Dhisto(TString sample, TTree *tree, TString intLumi, TString cuts,
         bool useLog, TString name, bool data);
 
 void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
-        TString score="fj_1_ParticleNetMD_XbbVsQCD", TString ptmin="0", TString ptmax="9999",
+        TString score="fj_1_ParticleNetMD_XbbVsQCD", TString jetRadius="0.8",
+        TString ptmin="0", TString ptmax="9999",
         TString outputDir=".");
 
 void makeMCHistosTop(TString name, TString path, std::vector<TString> processes, std::vector<TString> process_names,
@@ -66,7 +67,7 @@ void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
         TString ptmax = "1200";
         // set sub directory in output directory
         outputDir += "/templates2D";
-        makeTemplatesTop(sample, era, wpmin, wpmax, conf::score_def, ptmin, ptmax, outputDir);    
+        makeTemplatesTop(sample, era, wpmin, wpmax, conf::score_def, conf::jet_radius, ptmin, ptmax, outputDir);    
     }
     else {
         TString msg = "Sample " + sample + " not recognized.";
@@ -76,6 +77,7 @@ void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
 
 void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
         TString score="fj_1_ParticleNetMD_XbbVsQCD", 
+        TString jetRadius="0.8",
         TString ptmin="0==0",
         TString ptmax="0==0",
         TString outputDir=".") {
@@ -129,9 +131,10 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   TString c_base = TString("(passmetfilters && passMuTrig")
                    + " && fj_1_pt>=" + ptmin + " && fj_1_pt<" + ptmax
                    + " && abs(fj_1_eta)<2.4 && leptonicW_pt>150.)";
-  TString jetRadius = "1.5"; // maybe later make argument (?)
-  TString c_p3 = "( (fj_1_dr_T_Wq_max<"+jetRadius+") && (fj_1_dr_T_b<"+jetRadius+") )";
-  TString c_p2 = "((fj_1_T_Wq_max_pdgId==0 && fj_1_dr_W_daus<"+jetRadius+") || (fj_1_T_Wq_max_pdgId!=0 && fj_1_dr_T_b>="+jetRadius+" && fj_1_dr_T_Wq_max<"+jetRadius+"))";     
+  TString c_p3 = TString("( (fj_1_dr_T_Wq_max<") + jetRadius + ")"
+                 + " && (fj_1_dr_T_b<" + jetRadius + ") )";
+  TString c_p2 = TString("((fj_1_T_Wq_max_pdgId==0 && fj_1_dr_W_daus<" + jetRadius + ")"
+                 + " || (fj_1_T_Wq_max_pdgId!=0 && fj_1_dr_T_b>=" + jetRadius + " && fj_1_dr_T_Wq_max<" + jetRadius + "))";
   TString c_p1 = "(!("+c_p3+" || "+c_p2+"))";
 
   std::vector<TString> cuts; cuts.clear();
