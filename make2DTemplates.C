@@ -129,8 +129,9 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   TString c_base = TString("(passmetfilters && passMuTrig")
                    + " && fj_1_pt>=" + ptmin + " && fj_1_pt<" + ptmax
                    + " && abs(fj_1_eta)<2.4 && leptonicW_pt>150.)";
-  TString c_p3 = "( (fj_1_dr_T_Wq_max<0.8) && (fj_1_dr_T_b<0.8) )";
-  TString c_p2 = "((fj_1_T_Wq_max_pdgId==0 && fj_1_dr_W_daus<0.8) || (fj_1_T_Wq_max_pdgId!=0 && fj_1_dr_T_b>=0.8 && fj_1_dr_T_Wq_max<0.8))";     
+  TString jetRadius = "1.5"; // maybe later make argument (?)
+  TString c_p3 = "( (fj_1_dr_T_Wq_max<"+jetRadius+") && (fj_1_dr_T_b<"+jetRadius+") )";
+  TString c_p2 = "((fj_1_T_Wq_max_pdgId==0 && fj_1_dr_W_daus<"+jetRadius+") || (fj_1_T_Wq_max_pdgId!=0 && fj_1_dr_T_b>="+jetRadius+" && fj_1_dr_T_Wq_max<"+jetRadius+"))";     
   TString c_p1 = "(!("+c_p3+" || "+c_p2+"))";
 
   std::vector<TString> cuts; cuts.clear();
