@@ -120,6 +120,60 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
 		      if (category[ic] == "pass") { hist_out_p.push_back(hist); hist_out_nom_p.push_back(hist); }
 		      else                        { hist_out_f.push_back(hist); hist_out_nom_f.push_back(hist); } 
 		  }
+        // rewrite the jmr template
+        // defined jmr down variation as 2*nominal - (+1 sigma)
+        // to apply Gaussian sharpening
+        else if (syst[is].Contains("jmr")){
+
+          // set the correct name for the systematic
+          TString nameSyst = syst[is];
+		      if ( (syst[is].Contains("jmr")) ){
+		          nameSyst = process_out+syst[is];
+		      }
+
+          // get the nominal template 
+          // should be the same as what's in the 'nominal case' above
+          TH1D *hist_nominal = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"__"+catstr_,
+                                  name, ymin, ymax, 1, false);
+              for(unsigned int ip=1; ip<processes_in.size(); ++ip){
+		          TH1D* htemp_nominal = h1DHistoFrom2DTemplates(path2file, processes_in[ip]+"__"+catstr_,
+                                  name, ymin, ymax, 1, false);
+		          hist_nominal->Add(htemp_nominal);
+		      }
+
+            // up variation
+            // should be the same as how it's defined for the 'systematic case' below
+            TH1D *hist_up = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"_"+syst[is]+"Up_"+catstr_,
+                                     name, ymin, ymax, 1, false);
+		      for(unsigned int ip=1; ip<processes_in.size(); ++ip){
+		          TH1D *htemp_up = h1DHistoFrom2DTemplates(path2file, processes_in[ip]+"_"+syst[is]+"Up_"+catstr_,
+                                     name, ymin, ymax, 1, false);
+		          hist_up->Add(htemp_up);
+              }
+		          hist_up->SetName(process_out+"_"+nameSyst+"Up");
+              hist_up->SetLineColor(colors.at(process_out));
+              hist_up->SetFillColor(colors.at(process_out));
+
+		      if (category[ic] == "pass") { hist_out_p.push_back(hist_up); }
+              else { hist_out_f.push_back(hist_up); }
+            
+            // down variation
+            TH1D *hist_down = (TH1D*)hist_nominal->Clone();
+            hist_down->SetName(process_out + "_" + nameSyst + "Down");
+            hist_down->Scale(2.0); // 2 * nominal
+            hist_down->Add(hist_up, -1.0); //subtract the jmrUp template
+
+            // Set negative bins to 0
+            for (int i = 1; i <= hist_down->GetNbinsX(); ++i) {
+                if (hist_down->GetBinContent(i) < 0) {
+                    hist_down->SetBinContent(i, 0);
+                }
+            }
+            
+            // push back the down template
+            if (category[ic] == "pass") { hist_out_p.push_back(hist_down); }
+              else { hist_out_f.push_back(hist_down); }
+      }
 
           // handle systematic case
 	      else{
