@@ -37,6 +37,7 @@ namespace conf {
   TString path_2022postEE;
   TString path_2023preBPix;
   TString path_2023postBPix;
+  TString path_2024;
 
   TString jet_radius;
 
@@ -58,15 +59,16 @@ namespace conf {
     path_2022postEE = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2022postEE/";
     path_2023preBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023preBPix/";
     path_2023postBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023postBPix/";
-    
+    //path_2024 = "/eos/user/z/zima/HadronicVH/20251209_ULNanoV9_MassRegression_ak8_muon_2024/";
+    path_2024 = "/eos/user/z/zima/HadronicVH/20251212_ULNanoV9_MassRegression_ak8_muon_2024/";
     // set jet radius
     // note: this is only used to make the split into top-merged, W-merged and non-merged at gen-level;
     //       the radius of the reco-level jets is already set in the input files.
-    jet_radius = "1.5";
+    jet_radius = "0.8";
     
     // set input variables
     TString jet_prefix = "fj_1_";
-    brX = jet_prefix + "regressed_mass"; 
+    brX = jet_prefix + "ParT_resonanceMass"; 
     brY = jet_prefix + "pt";
 
     // clear any previously stored variables    
@@ -87,7 +89,10 @@ namespace conf {
     processes.push_back("ttbar-powheg"); process_names.push_back("tt"); 
     processes.push_back("singletop");    process_names.push_back("st");
     //processes.push_back("ttv");          process_names.push_back("ttv");
-    processes.push_back("w");            process_names.push_back("wll");
+    
+    // don't have "w" for now
+    //processes.push_back("w");            process_names.push_back("wll");
+    
     processes.push_back("diboson");      process_names.push_back("vv");
     //processes.push_back("qcd-mg");       process_names.push_back("qcd");
     
@@ -104,7 +109,8 @@ namespace conf {
     processes_grouping["tp3"] = {"tt_p3", "st_p3"}; // also ttv_p3 if the sample is used.
     processes_grouping["tp2"] = {"tt_p2", "st_p2"}; // also ttv_p2 if the sample is used.
     processes_grouping["tp1"] = {"tt_p1", "st_p1"}; // also ttv_p1 if the sample is used.
-    processes_grouping["other"] = {"wll", "vv"}; // also qcd if the sample is used.
+    //processes_grouping["other"] = {"wll", "vv"}; // also qcd if the sample is used.
+    processes_grouping["other"] = {"vv"};
 
     // list of systematic uncertainties
     syst.push_back("_"); // this is for nominal
@@ -127,7 +133,7 @@ namespace conf {
     // note: historically, ParticleNet was used for the score,
     //       in particular the branch fj_1_ParticleNetMD_XccVsQCD;
     //       now switching to ParticleTransformer.
-    score_def = "fj_1_ParT_HccVsQCD";
+    score_def = "fj_1_scoutGloParT_HccVsQCD";
     score_category = "w";
 
     // binning
@@ -135,7 +141,7 @@ namespace conf {
     //       to make convenient bin edges, e.g. multiples of 5 GeV,
     //       so convenient categories (e.g. pt 300 - 400) can be correctly defined.
     // note: x-axis is for the mass, y-axis is for the pt.
-    binsX = 34; minX = 50;  maxX = 220.;
+    binsX = 30; minX = 50;  maxX = 200.;
     binsY = 40; minY = 200; maxY = 800.; 
  
     // settings for pt bins
@@ -144,8 +150,8 @@ namespace conf {
     //       for example: a pt bin of 300-325 GeV is not possible if the bins
     //       were defined with binsY = 4; minY = 200; maxY = 400;
     ptnames.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
-    ptnames.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);  
-    ptnames.push_back("pt400to800"); ptmin.push_back(400.); ptmax.push_back(800.);
+    ptnames.push_back("pt300to500"); ptmin.push_back(300.); ptmax.push_back(500.);  
+    ptnames.push_back("pt500to800"); ptmin.push_back(500.); ptmax.push_back(800.);
     ptnames.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
     
     legend_labels["tp3"] = "Top-merged";
