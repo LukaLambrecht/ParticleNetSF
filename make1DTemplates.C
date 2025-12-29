@@ -20,7 +20,6 @@ TH1D *h1DHistoFrom2DTemplates(TString path2file,TString h2dname,TString name,dou
 TCanvas *makeCanvasWithRatio(TH1D* hdata, std::vector<TH1D*> h1d, TString name, TString xname, TString yname, TLegend *leg);
 void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TString ptname, TString sample, double ymin, double ymax, TString outputDir=".");
 
-
 // main function
 void make1DTemplates(TString era, TString sample, TString wpmin, TString wpmax, TString outputDir="."){
 
