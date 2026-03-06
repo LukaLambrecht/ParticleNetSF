@@ -131,7 +131,10 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   // cuts and matching definition
   TString c_base = TString("(passmetfilters && passMuTrig")
                    + " && fj_1_pt>=" + ptmin + " && fj_1_pt<" + ptmax
+                   //+ " && abs(fj_1_eta)<2.4)" for ttCR samples
                    + " && abs(fj_1_eta)<2.4 && leptonicW_pt>150.)";
+                   //+ " && fj_1_scoutGloParT_HbbVsQCD > 0.08"; for ttCR samples
+  		             //+ " && bjet_closestFatJet_HbbVsQCD_for_cut > 0.25"; not being used for any samples rn
   TString c_p3 = TString("( (fj_1_dr_T_Wq_max<") + jetRadius + ")"
                  + " && (fj_1_dr_T_b<" + jetRadius + ") )";
   TString c_p2 = TString("((fj_1_T_Wq_max_pdgId==0") + " && fj_1_dr_W_daus<" + jetRadius + ")"

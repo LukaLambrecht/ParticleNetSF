@@ -59,8 +59,8 @@ namespace conf {
     path_2022postEE = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2022postEE/";
     path_2023preBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023preBPix/";
     path_2023postBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023postBPix/";
-    //path_2024 = "/eos/user/z/zima/HadronicVH/20251209_ULNanoV9_MassRegression_ak8_muon_2024/";
-    path_2024 = "/eos/user/z/zima/HadronicVH/20251212_ULNanoV9_MassRegression_ak8_muon_2024/";
+    //path_2024 = "/eos/user/z/zima/HadronicVH/MC1_loose_ULNanoV9_MassRegression_ak8_muon_2024/";
+    path_2024 = "/eos/user/z/zima/HadronicVH/MC_ULNanoV9_MassRegression_ak8_muon_2024/";
     // set jet radius
     // note: this is only used to make the split into top-merged, W-merged and non-merged at gen-level;
     //       the radius of the reco-level jets is already set in the input files.
@@ -68,7 +68,8 @@ namespace conf {
     
     // set input variables
     TString jet_prefix = "fj_1_";
-    brX = jet_prefix + "ParT_resonanceMass"; 
+    //brX = jet_prefix + "ParT_resonanceMass"; 
+    brX = jet_prefix + "sdmass"; 
     brY = jet_prefix + "pt";
 
     // clear any previously stored variables    
@@ -91,10 +92,11 @@ namespace conf {
     //processes.push_back("ttv");          process_names.push_back("ttv");
     
     // don't have "w" for now
-    //processes.push_back("w");            process_names.push_back("wll");
+    processes.push_back("w");            process_names.push_back("wll");
     
     processes.push_back("diboson");      process_names.push_back("vv");
-    //processes.push_back("qcd-mg");       process_names.push_back("qcd");
+    processes.push_back("qcd_filtered");       process_names.push_back("qcd");
+    processes.push_back("z2qq");       process_names.push_back("z2qq");
     
     // define which processes to split into p3, p2 and p1
     // note: must be subset of the process names defined above.
@@ -109,8 +111,8 @@ namespace conf {
     processes_grouping["tp3"] = {"tt_p3", "st_p3"}; // also ttv_p3 if the sample is used.
     processes_grouping["tp2"] = {"tt_p2", "st_p2"}; // also ttv_p2 if the sample is used.
     processes_grouping["tp1"] = {"tt_p1", "st_p1"}; // also ttv_p1 if the sample is used.
-    //processes_grouping["other"] = {"wll", "vv"}; // also qcd if the sample is used.
-    processes_grouping["other"] = {"vv"};
+    processes_grouping["other"] = {"wll", "vv", "qcd", "z2qq"}; // also qcd if the sample is used.
+    //processes_grouping["other"] = {"vv"};
 
     // list of systematic uncertainties
     syst.push_back("_"); // this is for nominal
@@ -134,7 +136,7 @@ namespace conf {
     //       in particular the branch fj_1_ParticleNetMD_XccVsQCD;
     //       now switching to ParticleTransformer.
     score_def = "fj_1_scoutGloParT_HccVsQCD";
-    score_category = "w";
+    score_category = "w"; 
 
     // binning
     // note: make sure the bin parameters are defined in a way
@@ -149,10 +151,21 @@ namespace conf {
     //       with the ones from the previous step;
     //       for example: a pt bin of 300-325 GeV is not possible if the bins
     //       were defined with binsY = 4; minY = 200; maxY = 400;
-    ptnames.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
-    ptnames.push_back("pt300to500"); ptmin.push_back(300.); ptmax.push_back(500.);  
+    //merge the first two pT bins
+    
+    ptnames.push_back("pt200to400"); ptmin.push_back(200.); ptmax.push_back(400.); 
+    //ptnames.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);
+    ptnames.push_back("pt400to500"); ptmin.push_back(400.); ptmax.push_back(500.);
     ptnames.push_back("pt500to800"); ptmin.push_back(500.); ptmax.push_back(800.);
     ptnames.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
+    
+    //ptnames.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
+    //ptnames.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);  
+    //ptnames.push_back("pt400to500"); ptmin.push_back(400.); ptmax.push_back(500.);
+    //ptnames.push_back("pt500to600"); ptmin.push_back(500.); ptmax.push_back(600.);
+    //ptnames.push_back("pt600to700"); ptmin.push_back(600.); ptmax.push_back(700.);
+    //ptnames.push_back("pt700to800"); ptmin.push_back(700.); ptmax.push_back(800.);
+    //ptnames.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
     
     legend_labels["tp3"] = "Top-merged";
     legend_labels["tp2"] = "W-merged";

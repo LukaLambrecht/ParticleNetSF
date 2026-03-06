@@ -76,7 +76,7 @@ if __name__=='__main__':
 
     # other settings
     # (hard-coded)
-    pois = ['tp2jms', 'tp2jmr']
+    pois = ['tp2jms', 'tp2jmr', 'tp1jms', 'tp1jmr', 'tp3jms', 'tp3jmr']
 
     # read all data in a convenient structure
     data = {}
