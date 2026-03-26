@@ -8,11 +8,6 @@ import matplotlib.pyplot as plt
 
 
 def parse_impacts_file_name(inputfile):
-    '''
-    Derive parameters such as year and pt-bin from a file name.
-    Note: depends on naming convention, modify as needed.
-    Expected input is of the form impacts_particlenet_tt1l_0.6to1.00_2022preEE_pt200to800.json
-    '''
     parts = os.path.basename(inputfile).replace('.json','').split('_')
     res = {
       'file': inputfile,
@@ -25,43 +20,64 @@ def parse_impacts_file_name(inputfile):
 
 
 def load_impacts_json(inputfile):
-    
     with open(inputfile, 'r') as f:
         info = json.load(f)
     params_dict = {param["name"]: param["fit"] for param in info["params"]}
     return params_dict
-    
 
-def plot_scalefactors(ydata, fig=None, ax=None,
+
+def plot_scalefactors(ydata,poi, fig=None, ax=None,
         primary_xticklabels=None, secondary_xticklabels=None,
-        horizontal_shift=None,
-        **kwargs):
+        horizontal_shift=0.0, xpositions=None, **kwargs):
 
-    # initialize the figure
-    if fig is None or ax is None: fig, ax = plt.subplots(figsize=(10,4))
+    if fig is None or ax is None:
+        fig, ax = plt.subplots(figsize=(10, 4))
 
-    # make the x-axis
-    xax = np.arange(len(ydata)).astype(float)
-    if horizontal_shift is None:
-        horizontal_shift = 0.
-
-    # format the y-values
-    central_values = [el[1] for el in ydata]
-    error_up = [el[2] - el[1] for el in ydata]
-    error_down = [el[1] - el[0] for el in ydata]
-
-    # make the base plot
-    ax.errorbar(xax + horizontal_shift, central_values, yerr = [error_down, error_up], fmt='o', linestyle='none', capsize=5, **kwargs)
-    ax.set_xlim((-0.5, len(ydata)))
-    ax.set_ylim((-2, 2))
+    if xpositions is None:
+        xax = np.arange(len(ydata)).astype(float)
+    else:
+        xax = np.array(xpositions, dtype=float)
     
-    # plot aesthetics
+    if 'jms' in poi:
+        scale = 0.05
+    elif 'jmr' in poi:
+        scale = 0.1
+    else:
+        raise ValueError(f"Unknown POI type: {poi}")
+
+    central_values = np.array([el[1] * scale + 1 for el in ydata], dtype=float)
+    error_up = np.array([(el[2] - el[1]) * scale for el in ydata], dtype=float)
+    error_down = np.array([(el[1] - el[0]) * scale for el in ydata], dtype=float)
+
+    # mask NaN entries so missing bins don't get drawn
+    mask = np.isfinite(central_values) & np.isfinite(error_up) & np.isfinite(error_down)
+
+    ax.errorbar(
+        xax[mask] + horizontal_shift,
+        central_values[mask],
+        yerr=[error_down[mask], error_up[mask]],
+        fmt='o',
+        linestyle='none',
+        capsize=5,
+        **kwargs
+    )
+
+    if len(xax) > 0:
+        ax.set_xlim((-0.5, np.max(xax) + 0.5))
+    if 'jms' in poi:
+        ax.set_ylim((0.9, 1.1))
+    elif 'jmr' in poi:
+        ax.set_ylim((0.8, 1.2))
+
     if primary_xticklabels is not None:
         ax.set_xticks(ticks=xax, labels=primary_xticklabels, rotation=60, ha='right')
+
     if secondary_xticklabels is not None:
         for xval, label in secondary_xticklabels.items():
-            ax.text(xval-0.15, -1.95, label, ha='left', va='bottom')
-            ax.axvline(xval-0.2, color='grey', linestyle='--')
+            ax.text(xval, -0.18, label, ha='left', va='top',
+                    transform=ax.get_xaxis_transform())
+
+    ax.axhline(y=1, color='black', linestyle='--', linewidth=1)
     ax.set_ylabel('Scale factor')
     ax.grid()
     fig.tight_layout()
@@ -70,37 +86,35 @@ def plot_scalefactors(ydata, fig=None, ax=None,
 
 if __name__=='__main__':
 
-    # command-line args
-    # (maybe extend later)
     impactfiles = sys.argv[1:]
-
-    # other settings
-    # (hard-coded)
     pois = ['tp2jms', 'tp2jmr', 'tp1jms', 'tp1jmr', 'tp3jms', 'tp3jmr']
 
-    # read all data in a convenient structure
     data = {}
     years = []
     wps = []
     ptbins = []
     for impactfile in impactfiles:
-        # extract the year, working point and pt-bin from the file name
         info = parse_impacts_file_name(impactfile)
         year = info['year']
-        if year not in years: years.append(year)
+        if year not in years:
+            years.append(year)
         wp = info['wp']
-        if wp not in wps: wps.append(wp) 
+        if wp not in wps:
+            wps.append(wp)
         ptbin = info['bin']
-        if ptbin not in ptbins: ptbins.append(ptbin)
-        if year not in data.keys(): data[year] = {}
-        if wp not in data[year].keys(): data[year][wp] = {}
-        if ptbin not in data[year][wp].keys(): data[year][wp][ptbin] = {}
-        # read the post-fit parameters
+        if ptbin not in ptbins:
+            ptbins.append(ptbin)
+        if year not in data:
+            data[year] = {}
+        if wp not in data[year]:
+            data[year][wp] = {}
+        if ptbin not in data[year][wp]:
+            data[year][wp][ptbin] = {}
+
         params = load_impacts_json(impactfile)
         for poi in pois:
-            if poi not in params.keys():
-                msg = f'WARNING: parameter {poi} not found in {impactfile}.'
-                print(msg)
+            if poi not in params:
+                print(f'WARNING: parameter {poi} not found in {impactfile}.')
                 continue
             data[year][wp][ptbin][poi] = params[poi]
 
@@ -109,86 +123,85 @@ if __name__=='__main__':
     ptmaxs = [float(ptbin.split('to')[1].replace('pt', '')) for ptbin in ptbins]
     ptbins_sorted = [(ptbin, ptmin, ptmax) for ptbin, ptmin, ptmax in zip(ptbins, ptmins, ptmaxs)]
     ptbins_sorted = sorted(ptbins_sorted, key=lambda x: (x[2], -x[1]))
-    ptbins_sorted = [ptbin[0] for ptbin in ptbins_sorted]
-    ptbins = ptbins_sorted
+    ptbins = [ptbin[0] for ptbin in ptbins_sorted]
 
-    # sort the years
+    # sort years
     years_sorted = sorted([y.replace('pre','xxx').replace('post', 'zzz') for y in years])
-    years_sorted = [y.replace('xxx', 'pre').replace('zzz', 'post') for y in years_sorted]
-    years = years_sorted
+    years = [y.replace('xxx', 'pre').replace('zzz', 'post') for y in years_sorted]
 
-    # make plots
-    # one plot per working point and parameter of interest, plotting years and pt-bins
+    # build one common x-axis layout for all plots
+    slots = []
+    ptticklabels = []
+    yearticklabels = {}
+    for year in years:
+        yearticklabels[len(slots)] = year
+        for ptbin in ptbins:
+            slots.append((year, ptbin))
+            ptticklabels.append('pT ' + ptbin.replace('pt', '').replace('to', ' - '))
+
+    xpositions = np.arange(len(slots), dtype=float)
+
+    # first kind: one WP per plot
     for poi in pois:
         for wp in wps:
-            # get the data
-            ptticklabels = []
-            yearticklabels = {}
             ydata = []
-            for year in years:
-                if wp not in data[year].keys(): continue
-                yearticklabels[len(ydata)] = year
-                for ptbin in ptbins:
-                    if ptbin not in data[year][wp].keys(): continue
-                    ptlabel = 'pT ' + ptbin.replace('pt', '').replace('to', ' - ')
-                    ptticklabels.append(ptlabel)
-                    if poi not in data[year][wp][ptbin].keys():
-                        msg = f'WARNING: parameter {poi} not found for year {year}, WP {wp}, pt-bin {ptbin}.'
-                        print(msg)
-                        ydata.append((0,0,0))
-                        continue
-                    ydata.append(data[year][wp][ptbin][poi])
-            # make a plot
-            fig, ax = plot_scalefactors(ydata, primary_xticklabels=ptticklabels,
-                        secondary_xticklabels=yearticklabels)
+            for year, ptbin in slots:
+                if year in data and wp in data[year] and ptbin in data[year][wp] and poi in data[year][wp][ptbin]:
+                    lo, val, hi = data[year][wp][ptbin][poi]
+                    ydata.append((lo, val , hi ))   # shift only central+interval consistently
+                else:
+                    ydata.append((np.nan, np.nan, np.nan))
+
+            fig, ax = plot_scalefactors(
+                ydata,
+                poi=poi,
+                xpositions=xpositions,
+                primary_xticklabels=ptticklabels,
+                secondary_xticklabels=yearticklabels
+            )
             wplabel = wp.replace('to', ' - ')
             ax.text(0.02, 1.02, f'POI: {poi}, WP: {wplabel}', transform=ax.transAxes)
             fig.tight_layout()
             fig.savefig(f'test_{poi}_{wp}.png')
 
-    # make plots
-    # one plot per parameter of interest, plotting years and pt-bins, and overlaying working points
+    # second kind: all WPs on one plot, same x-axis layout
     for poi in pois:
-        
-        # initializations
         fig = None
         ax = None
 
-        # make colors
         cmap = plt.get_cmap('cool')
         cvals = np.linspace(0, 1, num=len(wps), endpoint=True)
         colors = {wp: cmap(cvals[cidx]) for cidx, wp in enumerate(wps)}
 
-        # make horizontal shifts
-        hshifts = np.linspace(0, 0.5, num=len(wps), endpoint=True)
-        hshifts = {wp: hshifts[idx] for idx, wp in enumerate(wps)}
-        
+        spacing = 0.7
+        xpositions = np.arange(len(slots), dtype=float) * spacing
+
+        shifts = np.linspace(-0.10, 0.10, num=len(wps), endpoint=True)
+        hshifts = {wp: shifts[idx] for idx, wp in enumerate(wps)}
+
         for wp in wps:
-            # get the data
-            ptticklabels = []
-            yearticklabels = {}
             ydata = []
-            for year in years:
-                if wp not in data[year].keys(): continue
-                yearticklabels[len(ydata)] = year
-                for ptbin in ptbins:
-                    if ptbin not in data[year][wp].keys(): continue
-                    ptlabel = 'pT ' + ptbin.replace('pt', '').replace('to', ' - ')
-                    ptticklabels.append(ptlabel)
-                    if poi not in data[year][wp][ptbin].keys():
-                        msg = f'WARNING: parameter {poi} not found for year {year}, WP {wp}, pt-bin {ptbin}.'
-                        print(msg)
-                        ydata.append((0,0,0))
-                        continue
-                    ydata.append(data[year][wp][ptbin][poi])
-            # make a plot
+            for year, ptbin in slots:
+                if year in data and wp in data[year] and ptbin in data[year][wp] and poi in data[year][wp][ptbin]:
+                    lo, val, hi = data[year][wp][ptbin][poi]
+                    ydata.append((lo , val , hi ))
+                else:
+                    ydata.append((np.nan, np.nan, np.nan))
+
             wplabel = 'WP: ' + wp.replace('to', ' - ')
-            fig, ax = plot_scalefactors(ydata,
-                        fig=fig, ax=ax,
-                        label=wplabel, color=colors[wp],
-                        horizontal_shift=hshifts[wp],
-                        primary_xticklabels=ptticklabels,
-                        secondary_xticklabels=yearticklabels)
+            fig, ax = plot_scalefactors(
+                ydata,
+                poi=poi,
+                fig=fig,
+                ax=ax,
+                xpositions=xpositions,
+                label=wplabel,
+                color=colors[wp],
+                horizontal_shift=hshifts[wp],
+                primary_xticklabels=ptticklabels,
+                secondary_xticklabels=yearticklabels
+            )
+
         ax.legend(ncols=len(wps))
         ax.text(0.02, 1.02, f'POI: {poi}', transform=ax.transAxes)
         fig.tight_layout()
