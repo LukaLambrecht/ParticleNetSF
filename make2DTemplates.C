@@ -110,7 +110,6 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   if (era == "2022postEE") { path = conf::path_2022postEE; intLumi = 26.67; }
   if (era == "2023preBPix") { path = conf::path_2023preBPix; intLumi = 18.08; }
   if (era == "2023postBPix") { path = conf::path_2023postBPix; intLumi = 9.69; }
-  if (era == "2024") { path = conf::path_2024; intLumi = 109.08; }
   ostringstream tmpLumi; tmpLumi << intLumi; TString lumi = tmpLumi.str();
   std::cout << "Found following sample path: " << path << std::endl;
   std::cout << "Found following luminosity: " << intLumi << std::endl;
@@ -161,7 +160,6 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   TString name = sample+"_"+wpmin+"to"+wpmax+"_"+era;
   
   // make data histograms 
-  // disable this part for now
   TString datafile = path+"/data/singlemu_tree.root";
   std::cout << "Making data histogram from file " << datafile << std::endl;
   TFile *f_data  = TFile::Open(datafile, "READONLY");
@@ -228,10 +226,9 @@ void makeMCHistosTop(TString name, TString path, std::vector<TString> processes,
   if ( sysType == "Up" ) { sys_type_dir_suffix = "_up/"; }
   if ( sysType == "Down" ) { sys_type_dir_suffix ="_down/"; }
   TString sys_dir;
-  if( sys == "nom" || sys == "pu" || sys == "jms" || sys == "jmr" ){ sys_dir = "/mc/"; }
-  else if( sys.Contains("lhe") || sys.Contains("ps") ){ sys_dir = "/mc/"; }
-  //else{ sys_dir = "/" +sys +sys_type_dir_suffix; }
-  else{ sys_dir = "/mc/"; }
+  if( sys == "nom" || sys == "pu" || sys == "jms" || sys == "jmr" ){ sys_dir = "/LHEWeight/"; }
+  else if( sys.Contains("lhe") || sys.Contains("ps") ){ sys_dir = "/LHEWeight/"; }
+  else{ sys_dir = "/" +sys +sys_type_dir_suffix; }
 
   // set up some more names
   if ( (sys == "nom") ) { name = name+"_"+sys; }
@@ -309,7 +306,6 @@ TH2D *create2Dhisto(TString sample, TTree *tree, TString intLumi, TString cuts,
   
   // set up correct top-pt reweighting factor
   TString ttWgt     = "1.";
-  // this is 1 for scouting (?)
   if (sample.Contains("tt1l")) { ttWgt = "topptWeight"; };
 
   // make the configuration for this sample
