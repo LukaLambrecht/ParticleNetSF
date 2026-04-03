@@ -38,7 +38,7 @@ Then run the following:
 ```
 git clone -b ParticleNet_TopW_SFs_NanoV9 https://github.com/LukaLambrecht/ParticleNetSF.git
 cd ParticleNetSF/
-cp TagAndProbeExtended.py $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/python
+cp fitmodel/TagAndProbeExtended.py $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/python
 ```
 
 ## Input files
