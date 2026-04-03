@@ -1,8 +1,10 @@
 #!/usr/bin/env python 
 
-# Run the full scale factor measurement chain
+# Run the fits.
+# This is similar to runFullChain.py, but limited to the fit (including datacard production).
+# This allows for finer job splitting for higher parallellization
+# (for example: different pt bins in different jobs).
 
-# import external modules
 import os
 import sys
 import six
@@ -15,6 +17,28 @@ sys.path.append(topdir)
 import jobtools.condortools as ct
 
 
+def get_ptnames_from_config(cffile='configuration.h'):
+    '''
+    Get available pt names from the configuration file.
+    This is a bit of a hack, reading a .h file in python as a plain txt file
+    and manually parsing the content, but ok for now.
+    '''
+
+    # read config file as plain text
+    with open(cffile, 'r') as f:
+        lines = [line.strip(' \t\n') for line in f.readlines()]
+
+    # look for lines defining the ptnames
+    lines = [line for line in lines if line.startswith('ptnames.push_back(')]
+
+    # exctract ptnames from those lines
+    ptnames = []
+    for line in lines:
+        process = line.split('(', 1)[1].split(')', 1)[0].strip('\'"')
+        ptnames.append(process)
+    return ptnames
+
+
 # read command-line args
 # todo: add optional arguments for more flexibility
 parser = argparse.ArgumentParser()
@@ -24,8 +48,10 @@ parser.add_argument('-w', '--working_points', required=True,
   help='Path to json file with working point definitions.')
 parser.add_argument('-o', '--outputdir', default='output', type=os.path.abspath,
   help='Define path where output should appear (default: "output").')
-parser.add_argument('--steps', default=['all'], nargs='+', choices=['all', '2d', '1d', 'datacards', 'fit'],
-  help='Define steps to run (default: all steps).')
+parser.add_argument('-p', '--ptnames', default=['all'], nargs='+',
+  help='Pt bins to run (note that multiple can be provided, separated by spaces).'
+      +' See configuration.h options.'
+      +' Use "all" to run all available pt bins defined in configuration.h (+ data).')
 parser.add_argument('-r', '--runmode', default='interactive', choices=['interactive', 'condor'],
   help='Run in terminal or in condor job submission.')
 parser.add_argument('--cmssw', default='auto',
@@ -74,35 +100,37 @@ for year in args.year:
         msg = f'Year {year} not found in {args.working_points}.'
         raise Exception(msg)
 
-# parse steps
-if 'all' in args.steps:
-    args.steps = ['2d', '1d', 'datacards', 'fit']
+# parse ptnames
+all_ptnames = get_ptnames_from_config()
+if 'all' in args.ptnames: args.ptnames = all_ptnames[:]
+
+# check if all requested ptnames are available
+for ptname in args.ptnames:
+    if ptname not in all_ptnames:
+        msg = f'Pt bin {ptname} not found in configuration.'
+        msg += f' Options are {all_ptnames}.'
+        raise Exception(msg)
 
 # make output directory and copy auxiliary files
 if not os.path.exists(args.outputdir): os.makedirs(args.outputdir)
 os.system(f'cp configuration.h {args.outputdir}')
 os.system(f'cp {args.working_points} {args.outputdir}')
 
-# loop over years and mistag rates
+# loop over years and mistag rates and pt bins
 jobs = []
 for year in args.year:
     for mistag_rate, wp in working_points[year].items():
+        for ptname in args.ptnames:
       
-        # make the commands to run
-        cmds = []
-        if '2d' in args.steps:
-            cmds.append( f'make2DTemplates.C("{year}", "tt1l", "all", "{wp}", "1.00", "{args.outputdir}")' )
-        if '1d' in args.steps:
-            cmds.append( f'make1DTemplates.C("{year}", "tt1l", "{wp}", "1.00", "{args.outputdir}")' )
-        if 'datacards' in args.steps:
-            cmds.append( f'makeDatacards.C("{year}", "tt1l", "all", "{wp}", "1.00", "{args.outputdir}")' )
-        if 'fit' in args.steps:
-            cmds.append( f'makeFits.C("{year}", "tt1l", "all", "{wp}", "1.00", "{args.outputdir}")' )
+            # make the commands to run
+            cmds = []
+            cmds.append( f'makeDatacards.C("{year}", "tt1l", "{ptname}", "{wp}", "1.00", "{args.outputdir}")' )
+            cmds.append( f'makeFits.C("{year}", "tt1l", "{ptname}", "{wp}", "1.00", "{args.outputdir}")' )
      
-        for idx, cmd in enumerate(cmds):
-            cmds[idx] = f'root -l -q \'{cmd}\''
+            for idx, cmd in enumerate(cmds):
+                cmds[idx] = f'root -l -q \'{cmd}\''
 
-        jobs.append(cmds)
+            jobs.append(cmds)
 
 # run jobs interactively
 if args.runmode=='interactive':

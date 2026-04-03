@@ -26,12 +26,13 @@ TH2D *create2Dhisto(TString sample, TTree *tree, TString intLumi, TString cuts,
         TString branchY, int binsY, float minY, float maxY,
         bool useLog, TString name, bool data);
 
-void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
+void makeTemplatesTop(TString sample, TString era, TString process, TString wpmin, TString wpmax,
         TString score="fj_1_ParticleNetMD_XbbVsQCD", TString jetRadius="0.8",
         TString ptmin="0", TString ptmax="9999",
         TString outputDir=".");
 
-void makeMCHistosTop(TString name, TString path, std::vector<TString> processes, std::vector<TString> process_names,
+void makeMCHistosTop(TString name, TString path,
+        std::vector<TString> processes, std::vector<TString> process_names,
         TString sys, TString sysType, TString wgts, std::vector<TString> cuts,
         TString brX, int binsX, float minX, float maxX,
         TString brY, int binsY, float minY, float maxY,
@@ -49,8 +50,8 @@ double massSmear(double mass, unsigned long lumi, unsigned long event, double si
 
 
 // main function
-void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
-       TString outputDir="."){
+void make2DTemplates(TString era, TString sample, TString process,
+        TString wpmin, TString wpmax, TString outputDir="."){
 
     // make the configuration for this sample
     conf::configuration(sample);
@@ -67,7 +68,8 @@ void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
         TString ptmax = "1200";
         // set sub directory in output directory
         outputDir += "/templates2D";
-        makeTemplatesTop(sample, era, wpmin, wpmax, conf::score_def, conf::jet_radius, ptmin, ptmax, outputDir);    
+        makeTemplatesTop(sample, era, process, wpmin, wpmax,
+            conf::score_def, conf::jet_radius, ptmin, ptmax, outputDir);    
     }
     else {
         TString msg = "Sample " + sample + " not recognized.";
@@ -75,7 +77,7 @@ void make2DTemplates(TString era, TString sample, TString wpmin, TString wpmax,
     }
 }
 
-void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
+void makeTemplatesTop(TString sample, TString era, TString process, TString wpmin, TString wpmax,
         TString score="fj_1_ParticleNetMD_XbbVsQCD", 
         TString jetRadius="0.8",
         TString ptmin="0==0",
@@ -98,6 +100,27 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   vector<TString> processes = conf::processes;
   vector<TString> process_names = conf::process_names;
 
+  // check if provided process name is in available processes
+  if( process != "all" && process != "data" ){
+    if(std::find(processes.begin(), processes.end(), process) == processes.end()){
+      TString msg = "Requested process '" + process + "' not found in config.";
+      throw std::runtime_error(msg);
+    }
+  }
+
+  // limit vector of processes and process names to the requested process
+  if( process != "all" ){
+    if( process == "data" ){
+        processes = {};
+        process_names = {};
+    } else{
+        unsigned int idx = std::find(processes.begin(), processes.end(), process) - processes.begin();
+        TString process_name = process_names.at(idx);
+        processes = {process};
+        process_names = {process_name};
+    }
+  }
+
   // get path to files and luminosity
   // (depending on the year)
   TString path;
@@ -116,7 +139,11 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
 
   // set output file name
   // todo: maybe add score in output directory or file name to avoid confusion
-  TString nameoutfile = "particlenet_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+ptmin+"to"+ptmax+"_templates";
+  TString process_tag = "";
+  if( process != "all" ) process_tag = "_" + process;
+  TString nameoutfile = "particlenet_tt1l_" + wpmin + "to" + wpmax;
+  nameoutfile += "_" + era + "_" + ptmin + "to" + ptmax;
+  nameoutfile += "_templates" + process_tag;
   
   // make output directory
   const int dir_err = system("mkdir -p " + outputDir);
@@ -159,22 +186,24 @@ void makeTemplatesTop(TString sample, TString era, TString wpmin, TString wpmax,
   // todo: maybe add score in histogram name to avoid confusion
   TString name = sample+"_"+wpmin+"to"+wpmax+"_"+era;
   
-  // make data histograms 
-  TString datafile = path+"/data/singlemu_tree.root";
-  std::cout << "Making data histogram from file " << datafile << std::endl;
-  TFile *f_data  = TFile::Open(datafile, "READONLY");
-  TTree *t_data  = (TTree*)f_data->Get("Events");
-  TH2D *h_data_p = create2Dhisto(name, t_data, lumi, cuts[0]+" && "+cuts[4],
+  // make data histograms
+  if( process=="all" || process=="data" ){ 
+    TString datafile = path+"/data/singlemu_tree.root";
+    std::cout << "Making data histogram from file " << datafile << std::endl;
+    TFile *f_data  = TFile::Open(datafile, "READONLY");
+    TTree *t_data  = (TTree*)f_data->Get("Events");
+    TH2D *h_data_p = create2Dhisto(name, t_data, lumi, cuts[0]+" && "+cuts[4],
                      brX, binsX, minX, maxX,
                      brY, binsY, minY, maxY,
                      false, "h_"+name+"_data_p", true);
-  TH2D *h_data_f = create2Dhisto(name, t_data, lumi, cuts[0]+" && "+cuts[5],
+    TH2D *h_data_f = create2Dhisto(name, t_data, lumi, cuts[0]+" && "+cuts[5],
                      brX, binsX, minX, maxX,
                      brY, binsY, minY, maxY,
                      false, "h_"+name+"_data_f", true);
-  fout->cd();
-  h_data_p->Write("data_obs_pass");
-  h_data_f->Write("data_obs_fail");
+    fout->cd();
+    h_data_p->Write("data_obs_pass");
+    h_data_f->Write("data_obs_fail");
+  }
   
   // MC templates
   std::vector<TString> syst = conf::syst;
