@@ -14,7 +14,7 @@ void makeOneFit(std::string wordir, std::string era, std::string category,
 
 
 // main function
-void makeFits(std::string era, std::string sample,
+void makeFits(std::string era, std::string sample, TString ptname,
         std::string wpmin, std::string wpmax,
         std::string outputDir="."){
 
@@ -22,12 +22,23 @@ void makeFits(std::string era, std::string sample,
   conf::configuration(sample);
   std::vector<TString> ptnames = conf::ptnames;
   TString category = conf::score_category;
+
+  // limit vector of ptnames to the requested ptname
+  if( ptname != "all" ){
+    auto it = std::find(ptnames.begin(), ptnames.end(), ptname);
+    if( it==ptnames.end() ){
+      TString msg = "Reqested pt name '" + ptname + "' not found in config.";
+      throw std::runtime_error(msg);
+    }
+    ptnames = {ptname};
+  }
   
   // define what to do based on sample
   // note: this is a relic from earlier development (?),
   //       in practice the sample is always 'tt1l'. 
   if(sample=="tt1l"){
       std::string outputSubDir = outputDir + "/templates1D";
+      // run over pt bins
       for(TString ptname: ptnames){
           std::cout << "Running makeFits on pt bin " << ptname << std::endl;
 	      makeOneFit(outputSubDir, era, (std::string)category, wpmin, wpmax, (std::string)ptname);

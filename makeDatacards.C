@@ -10,11 +10,21 @@
 void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name, TString sample, TString era);
 
 // main function
-void makeDatacards(TString era, TString sample, TString wpmin, TString wpmax, TString outputDir){
+void makeDatacards(TString era, TString sample, TString ptname, TString wpmin, TString wpmax, TString outputDir){
 
   // make the configuration for this sample
   conf::configuration(sample);
   std::vector<TString> ptnames  = conf::ptnames;
+
+  // limit vector of ptnames to the requested ptname
+  if( ptname != "all" ){
+    auto it = std::find(ptnames.begin(), ptnames.end(), ptname);
+    if( it==ptnames.end() ){
+      TString msg = "Reqested pt name '" + ptname + "' not found in config.";
+      throw std::runtime_error(msg);
+    }
+    ptnames = {ptname};
+  }
 
   // define what to do based on sample
   // note: this is a relic from earlier development (?),
@@ -126,10 +136,10 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   std::cout << "tp1jmr       shapeU    - - 1 -    - - 1 - \n";
   //std::cout << "otherjmr     shapeU    - - - 1    - - - 1 \n";
   
-  std::cout << "pu          shape    1 1 1 -    1 1 1 - \n";
-  std::cout << "jes         shape    1 1 1 -    1 1 1 - \n";
-  std::cout << "jer         shape    1 1 1 -    1 1 1 - \n";
-  std::cout << "met         shape    1 1 1 -    1 1 1 - \n";
+  //std::cout << "pu          shape    1 1 1 -    1 1 1 - \n";
+  //std::cout << "jes         shape    1 1 1 -    1 1 1 - \n";
+  //std::cout << "jer         shape    1 1 1 -    1 1 1 - \n";
+  //std::cout << "met         shape    1 1 1 -    1 1 1 - \n";
   std::cout << "lhescalemuf shape    1 1 1 -    1 1 1 - \n";
   std::cout << "lhescalemur shape    1 1 1 -    1 1 1 - \n";
   //std::cout << "lhepdf      shape    1 1 1 1    1 1 1 1 \n";
