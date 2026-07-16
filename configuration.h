@@ -68,8 +68,8 @@ namespace conf {
     
     // set input variables
     TString jet_prefix = "fj_1_";
-    //brX = jet_prefix + "ParT_resonanceMass"; 
-    brX = jet_prefix + "sdmass"; 
+    brX = jet_prefix + "ParT_resonanceMass"; 
+    //brX = jet_prefix + "sdmass"; 
     brY = jet_prefix + "pt";
 
     // clear any previously stored variables    
@@ -153,11 +153,11 @@ namespace conf {
     //       were defined with binsY = 4; minY = 200; maxY = 400;
     //merge the first two pT bins
     
-    ptnames.push_back("pt200to400"); ptmin.push_back(200.); ptmax.push_back(400.); 
     //ptnames.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);
     ptnames.push_back("pt400to500"); ptmin.push_back(400.); ptmax.push_back(500.);
     ptnames.push_back("pt500to800"); ptmin.push_back(500.); ptmax.push_back(800.);
     ptnames.push_back("pt200to800"); ptmin.push_back(200.); ptmax.push_back(800.);
+    ptnames.push_back("pt200to400"); ptmin.push_back(200.); ptmax.push_back(400.); 
     
     //ptnames.push_back("pt200to300"); ptmin.push_back(200.); ptmax.push_back(300.);
     //ptnames.push_back("pt300to400"); ptmin.push_back(300.); ptmax.push_back(400.);  

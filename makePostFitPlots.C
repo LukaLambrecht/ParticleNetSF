@@ -19,6 +19,7 @@ void setTDRStyle();
 TH1F *rescaleXaxis(TH1F *inputhisto, float xmin, float xmax);
 void rescaleXaxis(TGraphAsymmErrors *inputhisto, double xmin, double scale);
 TH1F *getDataMCratio(TGraphAsymmErrors *indata, TH1F *inMC);
+TH1F *getRelativeUncertaintyBand(TH1F *inMC);
 void makeDataMCPlotFromCombine(TString path2file, TString era, TString wpmin, TString wpmax, TString name, TString passOrFail, 
 			       float xmin, float xmax, int nbins,TString xaxisname, bool log, TString sample);
 
@@ -34,7 +35,7 @@ void makePostFitPlots(TString era, TString sample,
   
   if (sample == "tt1l"){
 	  makeDataMCPlotFromCombine(outputDir, era, wpmin, wpmax, binname, passOrFail,
-            conf::minX, conf::maxX, conf::binsX, "m_{regressed} [GeV]", false, sample);
+            conf::minX, conf::maxX, conf::binsX, "m_{SD} [GeV]", false, sample);
   }
   else{
       TString msg = "Sample " + sample + " not recognized.";
@@ -142,6 +143,13 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   TH1F *h_r_postfit = getDataMCratio(h_data,h_postfit[numOfMC-1]); h_r_postfit->SetName("h_r_postfit_"+name+"_"+passOrFail);
   h_r_postfit->SetMarkerColor(1); h_r_postfit->SetLineColor(1);
 
+  // relative post-fit uncertainty band on the total background, for the ratio panel
+  TH1F *h_r_band = getRelativeUncertaintyBand(h_postfit[numOfMC-1]); h_r_band->SetName("h_r_band_"+name+"_"+passOrFail);
+  h_r_band->SetFillColor(kGray+2);
+  h_r_band->SetFillStyle(3345);
+  h_r_band->SetLineColor(kGray+2);
+  h_r_band->SetMarkerSize(0);
+
   // make legend (upper panel)
   TLegend* leg = new TLegend(0.50, 0.65, 0.94, 0.89);
   leg->SetNColumns(2);
@@ -162,6 +170,7 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   leg_ratio->SetTextFont(42);
   leg_ratio->AddEntry(h_r_prefit, "Data / pre-fit", "L");
   leg_ratio->AddEntry(h_r_postfit, "Data / post-fit", "PE");
+  leg_ratio->AddEntry(h_r_band, "Post-fit unc.", "F");
 
   // write CMS name
   TPaveText *pt_cms = new TPaveText(0.17, 0.82, 0.6, 0.9, "NDC");
@@ -203,6 +212,7 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   if (era=="2022postEE") { lumiHeaderText = "2022-postEE, 26.67  fb^{-1}, 13.6 TeV"; }
   if (era=="2023preBPix") { lumiHeaderText = "2023-preBPix, 18.08  fb^{-1}, 13.6 TeV"; }
   if (era=="2023postBPix") { lumiHeaderText = "2023-postBPix, 9.69  fb^{-1}, 13.6 TeV"; }
+  if (era=="2024") { lumiHeaderText = "2024, 109.08 fb^{-1}, 13.6 TeV"; }
   lumiHeader.SetTextSize(0.06);
   lumiHeader.SetTextFont(42);
   lumiHeader.SetTextAlign(31);
@@ -267,10 +277,11 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   line->SetLineWidth(2);
 
   // draw all elements of lower pad in correct order
-  h_r_postfit->Draw("P E0");
+  h_r_postfit->Draw("AXIS");
+  h_r_band->Draw("E2 sames");
   line->Draw("sames");
-  h_r_postfit->Draw("P E0 sames");
   h_r_prefit->Draw("HIST sames");
+  h_r_postfit->Draw("P E0 sames");
   leg_ratio->Draw("sames");
   c->RedrawAxis();
  
@@ -328,18 +339,43 @@ void rescaleXaxis(TGraphAsymmErrors *g, double xmin, double scaleX) {
 
 TH1F *getDataMCratio(TGraphAsymmErrors *indata, TH1F *inMC) {
   // Helper function to get the data-to-MC ratio.
+  // Note: the ratio error is taken from the data (statistical) error only;
+  // the uncertainty on the prediction itself is shown separately as a band
+  // (see getRelativeUncertaintyBand), so it is not folded in here to avoid
+  // double-counting it in the data points' error bars.
   TH1::SetDefaultSumw2(kTRUE);
   TH1F *h_data = (TH1F*)inMC->Clone("h_data"); h_data->SetName("h_data");
-  for (unsigned int i0=0; i0<inMC->GetNbinsX(); ++i0) 
+  for (unsigned int i0=0; i0<inMC->GetNbinsX(); ++i0)
     {
       h_data->SetBinContent(i0+1, indata->GetY()[i0]);
       h_data->SetBinError(i0+1, (indata->GetEYlow()[i0]+indata->GetEYhigh()[i0])/2.);
     }
-  
+
   TH1F *h_ratio = (TH1F*)h_data->Clone("h_ratio");
   h_ratio->Divide(h_data,inMC);
+  for (unsigned int i0=0; i0<inMC->GetNbinsX(); ++i0)
+    {
+      double mc = inMC->GetBinContent(i0+1);
+      double dataerr = h_data->GetBinError(i0+1);
+      h_ratio->SetBinError(i0+1, (mc>0) ? dataerr/mc : 0.);
+    }
   h_ratio->SetMarkerStyle(20); h_ratio->SetMarkerSize(1);
   h_ratio->SetLineWidth(2); h_ratio->SetLineStyle(1);
-  
+
   return h_ratio;
+}
+
+
+TH1F *getRelativeUncertaintyBand(TH1F *inMC) {
+  // Helper function to build a band centered at 1 whose half-width is the
+  // relative (post-fit) uncertainty of inMC, for overlaying on a ratio plot.
+  TH1F *h_band = (TH1F*)inMC->Clone("h_band");
+  for (unsigned int i0=0; i0<inMC->GetNbinsX(); ++i0)
+    {
+      double val = inMC->GetBinContent(i0+1);
+      double err = inMC->GetBinError(i0+1);
+      h_band->SetBinContent(i0+1, 1.);
+      h_band->SetBinError(i0+1, (val>0) ? err/val : 0.);
+    }
+  return h_band;
 }

@@ -120,16 +120,57 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
 		      else                        { hist_out_f.push_back(hist); hist_out_nom_f.push_back(hist); } 
 		  }
 
+          // rewrite the jmr template:
+          // jmr down = 2*nominal - jmr up (Gaussian sharpening), clipped at 0
+          else if (syst[is].Contains("jmr")){
+              TString nameSyst = process_out+syst[is];
+
+              // nominal (sum over input processes)
+              TH1D *hist_nominal = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"__"+catstr_,
+                                       name, ymin, ymax, 1, false);
+              for(unsigned int ip=1; ip<processes_in.size(); ++ip){
+                  TH1D* htemp_nominal = h1DHistoFrom2DTemplates(path2file, processes_in[ip]+"__"+catstr_,
+                                       name, ymin, ymax, 1, false);
+                  hist_nominal->Add(htemp_nominal);
+              }
+
+              // up variation
+              TH1D *hist_up = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"_"+syst[is]+"Up_"+catstr_,
+                                     name, ymin, ymax, 1, false);
+              for(unsigned int ip=1; ip<processes_in.size(); ++ip){
+                  TH1D *htemp_up = h1DHistoFrom2DTemplates(path2file, processes_in[ip]+"_"+syst[is]+"Up_"+catstr_,
+                                     name, ymin, ymax, 1, false);
+                  hist_up->Add(htemp_up);
+              }
+              hist_up->SetName(process_out+"_"+nameSyst+"Up");
+              hist_up->SetLineColor(colors.at(process_out));
+              hist_up->SetFillColor(colors.at(process_out));
+              if (category[ic] == "pass") { hist_out_p.push_back(hist_up); }
+              else { hist_out_f.push_back(hist_up); }
+
+              // down variation: 2*nominal - jmrUp, negative bins clipped to 0
+              TH1D *hist_down = (TH1D*)hist_nominal->Clone();
+              hist_down->SetName(process_out+"_"+nameSyst+"Down");
+              hist_down->Scale(2.0);
+              hist_down->Add(hist_up, -1.0);
+              for (int i = 1; i <= hist_down->GetNbinsX(); ++i)
+                  if (hist_down->GetBinContent(i) < 0) hist_down->SetBinContent(i, 0.001);
+              hist_down->SetLineColor(colors.at(process_out));
+              hist_down->SetFillColor(colors.at(process_out));
+              if (category[ic] == "pass") { hist_out_p.push_back(hist_down); }
+              else { hist_out_f.push_back(hist_down); }
+          }
+
           // handle systematic case
 	      else{
               // set the correct name for the systematic
               // note: this determines the correlation of the systematic between processes!
               //       maybe later add in config fille.
 		      TString nameSyst = syst[is];
-		      if ( (syst[is].Contains("jms")) || (syst[is].Contains("jmr")) ){
+		      if (syst[is].Contains("jms")){
 		          nameSyst = process_out+syst[is];
 		      }
-              
+
               // up variation
               TH1D *hist_up = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"_"+syst[is]+"Up_"+catstr_,
                                      name, ymin, ymax, 1, false);
@@ -147,14 +188,14 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
               // down variation
               TH1D *hist_down = h1DHistoFrom2DTemplates(path2file, processes_in[0]+"_"+syst[is]+"Down_"+catstr_,
                                      name, ymin, ymax, 1, false);
-              for(unsigned int ip=1; ip<processes_in.size(); ++ip){ 
+              for(unsigned int ip=1; ip<processes_in.size(); ++ip){
                   TH1D *htemp_down = h1DHistoFrom2DTemplates(path2file, processes_in[ip]+"_"+syst[is]+"Down_"+catstr_,
                                      name, ymin, ymax, 1, false);
                   hist_down->Add(htemp_down);
               }
               hist_down->SetName(process_out+"_"+nameSyst+"Down");
               hist_down->SetLineColor(colors.at(process_out));
-              hist_down->SetFillColor(colors.at(process_out)); 
+              hist_down->SetFillColor(colors.at(process_out));
               if (category[ic] == "pass") { hist_out_p.push_back(hist_down); }
               else { hist_out_f.push_back(hist_down); }
 		  }
@@ -175,7 +216,7 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   }
 
   // make a plot
-  TString xname = "m_{scoutGloParT} [GeV]";
+  TString xname = "m_{SD} [GeV]";
   TString yname = "Events / Bin";
   TCanvas *c_pass = makeCanvasWithRatio(h_data_p, hist_out_nom_p, nameoutfile+"_pass", xname, yname, leg);  
   c_pass->Print(outputDir+"/"+nameoutfile+"_pass.png"); 
