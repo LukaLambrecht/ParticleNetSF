@@ -8,6 +8,7 @@
 #include <sstream>
 #include <fstream>
 #include "TTree.h"
+#include "TChain.h"
 #include "TFile.h"
 #include "TH1.h"
 #include "TH1D.h"
@@ -156,21 +157,27 @@ void makeTemplatesTop(TString sample, TString era, TString process, TString wpmi
   std::cout << "Will write output to " << outfile << std::endl;
   
   // cuts and matching definition
-  TString c_base = TString("(passmetfilters && passMuTrig")
-                   + " && fj_1_pt>=" + ptmin + " && fj_1_pt<" + ptmax
-                   //+ " && abs(fj_1_eta)<2.4)" for ttCR samples
-                   + " && abs(fj_1_eta)<2.4 )"
-                   + "&& lep_pdgId==13"
-                   + "&& fj_1_sdmass > 30"
-                   + "&& fj_1_sdmass < 200 && leptonicW_pt>150.";
+  TString c_base = TString("(passmetfilters")
+                   + " && ak8_pt>=" + ptmin + " && ak8_pt<" + ptmax
+                   //+ " && abs(ak8_eta)<2.4)" for ttCR samples
+                   + " && passTrigSingleMuonScouting>0"
+                   +" && n_ak4 >=2"
+                   +" && met>50"
+                   + " && abs(ak8_eta)<2.4 )"
+                   + "&& ak8_sdmass > 30"
+                   +" && ak8_ParT_resonanceMass > 50"
+                   +" && ak8_ParT_resonanceMass < 200"
+                   +"&& lep1_pdgId==13"
+                   + "&& ak8_sdmass < 200"
+                   +"&&lep1_relIso*lep1_pt< 0.005";
   		           //  + " && n_ak4jets >= 2"
 			  //+ "&& bjet_closestFatJet_HbbVsQCD_for_cut >= 0.2";
-                   //+ " && fj_1_scoutGloParT_HbbVsQCD > 0.08"; for ttCR samples
+                   //+ " && ak8_scoutGloParT_HbbVsQCD > 0.08"; for ttCR samples
   		             //+ " && bjet_closestFatJet_HbbVsQCD_for_cut > 0.25"; not being used for any samples rn
-  TString c_p3 = TString("( (fj_1_dr_T_Wq_max<") + jetRadius + ")"
-                 + " && (fj_1_dr_T_b<" + jetRadius + ") )";
-  TString c_p2 = TString("((fj_1_T_Wq_max_pdgId==0") + " && fj_1_dr_W_daus<" + jetRadius + ")"
-                 + " || (fj_1_T_Wq_max_pdgId!=0 && fj_1_dr_T_b>=" + jetRadius + " && fj_1_dr_T_Wq_max<" + jetRadius + "))";
+  TString c_p3 = TString("( (dr_ak8_hadtop_wqmax<") + jetRadius + ")"
+                 + " && (dr_ak8_hadtop_b<" + jetRadius + ") )";
+  TString c_p2 = TString("((hadtop_wqmax_pdgId==0") + " && dr_ak8_hdaus<" + jetRadius + ")"
+                 + " || (hadtop_wqmax_pdgId!=0 && dr_ak8_hadtop_b>=" + jetRadius + " && dr_ak8_hadtop_wqmax<" + jetRadius + "))";
   TString c_p1 = "(!("+c_p3+" || "+c_p2+"))";
 
   std::vector<TString> cuts; cuts.clear();
@@ -197,10 +204,13 @@ void makeTemplatesTop(TString sample, TString era, TString process, TString wpmi
   
   // make data histograms
   if( process=="all" || process=="data" ){ 
-    TString datafile = path+"/data/singlemu_tree.root";
-    std::cout << "Making data histogram from file " << datafile << std::endl;
-    TFile *f_data  = TFile::Open(datafile, "READONLY");
-    TTree *t_data  = (TTree*)f_data->Get("Events");
+    std::vector<TString> dataParts = {"partsCD", "partsEF", "partsGI", "partsHJ"};
+    TChain *t_data = new TChain("Events");
+    for (const auto &part : dataParts) {
+      TString pattern = path+"data/"+part+"/ScoutingPFRun3_tree_*.root";
+      std::cout << "Making data histogram from files " << pattern << std::endl;
+      t_data->Add(pattern);
+    }
     TH2D *h_data_p = create2Dhisto(name, t_data, lumi, cuts[0]+" && "+cuts[4],
                      brX, binsX, minX, maxX,
                      brY, binsY, minY, maxY,

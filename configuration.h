@@ -61,14 +61,15 @@ namespace conf {
     path_2023postBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023postBPix/";
     //path_2024 = "/eos/user/z/zima/HadronicVH/MC1_loose_ULNanoV9_MassRegression_ak8_muon_2024/";
     //path_2024 = "/eos/user/z/zima/HadronicVH/MC_ULNanoV9_MassRegression_ak8_muon_2024/";
-    path_2024 = "/eos/user/z/zima/HadronicVH/ttCR_test_ak8_muon_2024/";
+    //path_2024 = "/eos/user/z/zima/HadronicVH/ttCR_test_ak8_muon_2024/";
+    path_2024 = "/eos/user/b/bribeiro/HadronicVH/treesScouting_Jun2_2024_ttCR/";
     // set jet radius
     // note: this is only used to make the split into top-merged, W-merged and non-merged at gen-level;
     //       the radius of the reco-level jets is already set in the input files.
     jet_radius = "0.8";
     
     // set input variables
-    TString jet_prefix = "fj_1_";
+    TString jet_prefix = "ak8_";
     brX = jet_prefix + "ParT_resonanceMass"; 
     //brX = jet_prefix + "sdmass"; 
     brY = jet_prefix + "pt";
@@ -88,15 +89,20 @@ namespace conf {
     //       are missing from all years but 2016 (preVFP and postVFP),
     //       and the "ttv" samples are missing in 2016 and 2017,
     //       so disable them for now (for all years, for consistency). 
-    processes.push_back("ttbar-powheg"); process_names.push_back("tt"); 
+    processes.push_back("ttbar"); process_names.push_back("tt"); 
     processes.push_back("singletop");    process_names.push_back("st");
     //processes.push_back("ttv");          process_names.push_back("ttv");
     
     // don't have "w" for now
-    processes.push_back("w");            process_names.push_back("wll");
+    processes.push_back("w2lnu");            process_names.push_back("wll");
+    //processes.push_back("w2qq");            process_names.push_back("wll");
     
     processes.push_back("diboson");      process_names.push_back("vv");
-    processes.push_back("qcd");       process_names.push_back("qcd");
+    processes.push_back("qcd1");   process_names.push_back("qcd");
+    processes.push_back("qcd2");   process_names.push_back("qcd");
+    processes.push_back("qcd3");   process_names.push_back("qcd");
+    processes.push_back("qcd4");   process_names.push_back("qcd");
+    processes.push_back("qcd5");   process_names.push_back("qcd");
     processes.push_back("z2qq");       process_names.push_back("z2qq");
     
     // define which processes to split into p3, p2 and p1
@@ -134,9 +140,9 @@ namespace conf {
     // note: score_category should be "top" (tp3 is the main process of interest in the fit)
     //       or "w" (tp2 is the main process of interest in the fit)
     // note: historically, ParticleNet was used for the score,
-    //       in particular the branch fj_1_ParticleNetMD_XccVsQCD;
+    //       in particular the branch ak8_ParticleNetMD_XccVsQCD;
     //       now switching to ParticleTransformer.
-    score_def = "fj_1_scoutGloParT_HccVsQCD";
+    score_def = "ak8_ParT_HccVsQCD";
     score_category = "w"; 
 
     // binning
