@@ -305,6 +305,33 @@ TCanvas *makeCanvasWithRatio(TH1D* hdata, std::vector<TH1D*> h1d, TString name, 
   pRatio->SetBottomMargin(0.39);
   pMain->Draw();
   pRatio->Draw();
+
+  // don't have the entire data set, normalize mc to data for now to see the shape
+  double int1 = 0.0;
+  TList* hists = hs->GetHists();
+  if (hists) {
+      TIter it(hists);
+      TObject* obj;
+      while ((obj = it())) {
+          TH1* h = dynamic_cast<TH1*>(obj);
+          if (h) {
+              int1 += h->Integral();
+          }
+      }
+  }
+  double int2 = hdata->Integral();
+  if (int1 > 0) {
+    double scale = int2 / int1;
+
+    TIter it(hists);
+    TObject* obj;
+    while ((obj = it())) {
+        TH1* h = dynamic_cast<TH1*>(obj);
+        if (h) {
+            h->Scale(scale);
+        }
+    }
+  }
  
   // switch to upper pad
   pMain->cd();

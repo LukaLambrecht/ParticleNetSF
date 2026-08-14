@@ -60,7 +60,8 @@ namespace conf {
     path_2023preBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023preBPix/";
     path_2023postBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023postBPix/";
     //path_2024 = "/eos/user/z/zima/HadronicVH/MC1_loose_ULNanoV9_MassRegression_ak8_muon_2024/";
-    path_2024 = "/eos/user/z/zima/HadronicVH/MC_ULNanoV9_MassRegression_ak8_muon_2024/";
+    //path_2024 = "/eos/user/z/zima/HadronicVH/MC_ULNanoV9_MassRegression_ak8_muon_2024/";
+    path_2024 = "/eos/user/z/zima/HadronicVH/ttCR_test_ak8_muon_2024/";
     // set jet radius
     // note: this is only used to make the split into top-merged, W-merged and non-merged at gen-level;
     //       the radius of the reco-level jets is already set in the input files.
@@ -95,7 +96,7 @@ namespace conf {
     processes.push_back("w");            process_names.push_back("wll");
     
     processes.push_back("diboson");      process_names.push_back("vv");
-    processes.push_back("qcd_filtered");       process_names.push_back("qcd");
+    processes.push_back("qcd");       process_names.push_back("qcd");
     processes.push_back("z2qq");       process_names.push_back("z2qq");
     
     // define which processes to split into p3, p2 and p1

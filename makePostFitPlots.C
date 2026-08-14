@@ -35,7 +35,7 @@ void makePostFitPlots(TString era, TString sample,
   
   if (sample == "tt1l"){
 	  makeDataMCPlotFromCombine(outputDir, era, wpmin, wpmax, binname, passOrFail,
-            conf::minX, conf::maxX, conf::binsX, "m_{SD} [GeV]", false, sample);
+            conf::minX, conf::maxX, conf::binsX, "m_{ParT} [GeV]", false, sample);
   }
   else{
       TString msg = "Sample " + sample + " not recognized.";
@@ -62,7 +62,7 @@ void makeDataMCPlotFromCombine(TString workdir, TString era,
   conf::configuration(sample);
 
   // parse default x-axis name
-  if (xaxisname == "mass") { xaxisname = "m_{SD} [GeV]"; }
+  if (xaxisname == "mass") { xaxisname = "m_{ParT} [GeV]"; }
 
   // make output directory
   const int dir_err = system("mkdir -p "+(TString)workdir+"/plots_postfit");

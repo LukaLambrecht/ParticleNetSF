@@ -159,7 +159,12 @@ void makeTemplatesTop(TString sample, TString era, TString process, TString wpmi
   TString c_base = TString("(passmetfilters && passMuTrig")
                    + " && fj_1_pt>=" + ptmin + " && fj_1_pt<" + ptmax
                    //+ " && abs(fj_1_eta)<2.4)" for ttCR samples
-                   + " && abs(fj_1_eta)<2.4 && leptonicW_pt>150.)";
+                   + " && abs(fj_1_eta)<2.4 )"
+                   + "&& lep_pdgId==13"
+                   + "&& fj_1_sdmass > 30"
+                   + "&& fj_1_sdmass < 200 && leptonicW_pt>150.";
+  		           //  + " && n_ak4jets >= 2"
+			  //+ "&& bjet_closestFatJet_HbbVsQCD_for_cut >= 0.2";
                    //+ " && fj_1_scoutGloParT_HbbVsQCD > 0.08"; for ttCR samples
   		             //+ " && bjet_closestFatJet_HbbVsQCD_for_cut > 0.25"; not being used for any samples rn
   TString c_p3 = TString("( (fj_1_dr_T_Wq_max<") + jetRadius + ")"
