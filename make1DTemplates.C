@@ -77,8 +77,8 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
 
   std::vector<TH1D*> hist_out_p; hist_out_p.clear();
   std::vector<TH1D*> hist_out_f; hist_out_f.clear();
-  std::vector<TH1D*> hist_out_nom_p; hist_out_nom_p.clear();
-  std::vector<TH1D*> hist_out_nom_f; hist_out_nom_f.clear();
+  std::vector<TH1D*> hist_plot_p; hist_plot_p.clear();
+  std::vector<TH1D*> hist_plot_f; hist_plot_f.clear();
   std::vector<TString> category; 
   category.push_back("pass"); 
   category.push_back("fail");
@@ -116,8 +116,8 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
 		      hist->SetName(process_out);
               hist->SetLineColor(colors.at(process_out));
               hist->SetFillColor(colors.at(process_out));
-		      if (category[ic] == "pass") { hist_out_p.push_back(hist); hist_out_nom_p.push_back(hist); }
-		      else                        { hist_out_f.push_back(hist); hist_out_nom_f.push_back(hist); } 
+		      if (category[ic] == "pass") { hist_out_p.push_back(hist); hist_plot_p.push_back(hist); }
+		      else                        { hist_out_f.push_back(hist); hist_plot_f.push_back(hist); }
 		  }
 
           // rewrite the jmr template:
@@ -211,16 +211,16 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
   leg->SetLineWidth(0);
   leg->SetTextFont(42);
   leg->AddEntry(h_data_p, "Data", "PL");
-  for(unsigned int i0=0; i0<hist_out_nom_p.size(); ++i0){
-      leg->AddEntry(hist_out_nom_p[i0], labels[i0], "F");
+  for(unsigned int i0=0; i0<hist_plot_p.size(); ++i0){
+      leg->AddEntry(hist_plot_p[i0], labels[i0], "F");
   }
 
   // make a plot
-  TString xname = "m_{SD} [GeV]";
+  TString xname = "m_{ParTresonance} [GeV]";
   TString yname = "Events / Bin";
-  TCanvas *c_pass = makeCanvasWithRatio(h_data_p, hist_out_nom_p, nameoutfile+"_pass", xname, yname, leg);  
-  c_pass->Print(outputDir+"/"+nameoutfile+"_pass.png"); 
-  TCanvas *c_fail = makeCanvasWithRatio(h_data_f, hist_out_nom_f, nameoutfile+"_fail", xname, yname, leg);
+  TCanvas *c_pass = makeCanvasWithRatio(h_data_p, hist_plot_p, nameoutfile+"_pass", xname, yname, leg);
+  c_pass->Print(outputDir+"/"+nameoutfile+"_pass.png");
+  TCanvas *c_fail = makeCanvasWithRatio(h_data_f, hist_plot_f, nameoutfile+"_fail", xname, yname, leg);
   c_fail->Print(outputDir+"/"+nameoutfile+"_fail.png");
   
   // write templates to ROOT file
@@ -240,8 +240,8 @@ void makeDataMCFrom2DTemplatesTop(TString path2file, TString nameoutfile, TStrin
     }
   fout_f->Close();
   
-  hist_out_p.clear(); hist_out_nom_p.clear();
-  hist_out_f.clear(); hist_out_nom_f.clear();
+  hist_out_p.clear(); hist_plot_p.clear();
+  hist_out_f.clear(); hist_plot_f.clear();
   
 }
 

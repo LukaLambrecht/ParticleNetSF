@@ -60,7 +60,8 @@ namespace conf {
     path_2023preBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023preBPix/";
     path_2023postBPix = "/eos/user/b/bribeiro/HadronicVH/20250321_ULNanoV9_MassRegression_ak15_muon_2023postBPix/";
     //path_2024 = "/eos/user/z/zima/HadronicVH/MC1_loose_ULNanoV9_MassRegression_ak8_muon_2024/";
-    path_2024 = "/eos/user/z/zima/HadronicVH/MC_ULNanoV9_MassRegression_ak8_muon_2024/";
+    //path_2024 = "/eos/user/z/zima/HadronicVH/MC_ULNanoV9_MassRegression_ak8_muon_2024/";
+    path_2024 = "/eos/user/z/zima/HadronicVH/closeAk8_MC1_ak8_muon_2024";
     // set jet radius
     // note: this is only used to make the split into top-merged, W-merged and non-merged at gen-level;
     //       the radius of the reco-level jets is already set in the input files.
@@ -92,10 +93,15 @@ namespace conf {
     //processes.push_back("ttv");          process_names.push_back("ttv");
     
     // don't have "w" for now
+    // note: "w" and "w2qq" must have distinct process_names -- create2Dhisto()/makeMCHistosTop()
+    //       Write() the histogram under process_names[i], and two processes sharing a name
+    //       silently collide as separate ROOT cycles under the same key (the earlier one becomes
+    //       invisible to a plain Get()), rather than being summed.
     processes.push_back("w");            process_names.push_back("wll");
+    processes.push_back("w2qq");            process_names.push_back("w2qq");
     
     processes.push_back("diboson");      process_names.push_back("vv");
-    processes.push_back("qcd_filtered");       process_names.push_back("qcd");
+    processes.push_back("qcd");       process_names.push_back("qcd");
     processes.push_back("z2qq");       process_names.push_back("z2qq");
     
     // define which processes to split into p3, p2 and p1
@@ -111,7 +117,8 @@ namespace conf {
     processes_grouping["tp3"] = {"tt_p3", "st_p3"}; // also ttv_p3 if the sample is used.
     processes_grouping["tp2"] = {"tt_p2", "st_p2"}; // also ttv_p2 if the sample is used.
     processes_grouping["tp1"] = {"tt_p1", "st_p1"}; // also ttv_p1 if the sample is used.
-    processes_grouping["other"] = {"wll", "vv", "qcd", "z2qq"}; // also qcd if the sample is used.
+    processes_grouping["other"] = {"wll", "w2qq", "vv", "z2qq"}; // also qcd if the sample is used.
+    processes_grouping["qcd"] = {"qcd"};
     //processes_grouping["other"] = {"vv"};
 
     // list of systematic uncertainties
@@ -136,6 +143,7 @@ namespace conf {
     //       in particular the branch fj_1_ParticleNetMD_XccVsQCD;
     //       now switching to ParticleTransformer.
     score_def = "fj_1_scoutGloParT_HccVsQCD";
+    //score_def = "fj_1_scoutGloParT_HbbVsQCD";
     score_category = "w"; 
 
     // binning
@@ -171,11 +179,13 @@ namespace conf {
     legend_labels["tp2"] = "W-merged";
     legend_labels["tp1"] = "Non-merged";
     legend_labels["other"] = "Other";
+    legend_labels["qcd"] = "QCD";
 
     colors["tp3"] = 4;
     colors["tp2"] = 7;
     colors["tp1"] = 595;
     colors["other"] = 6;
+    colors["qcd"] = 800;
   }   
 
   TString convertFloatToTString(float input) {

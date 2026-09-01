@@ -2,8 +2,6 @@ import os
 import sys
 import json
 import numpy as np
-import pandas as pd
-from fnmatch import fnmatch
 import matplotlib.pyplot as plt
 
 
@@ -23,6 +21,10 @@ def load_impacts_json(inputfile):
     with open(inputfile, 'r') as f:
         info = json.load(f)
     params_dict = {param["name"]: param["fit"] for param in info["params"]}
+    # the tagger-score SFs (SF_tp1/tp2/tp3) live in the "POIs" block, not in "params";
+    # store their [lo, best, hi] the same way so they can be read like any other parameter
+    for poi in info.get("POIs", []):
+        params_dict.setdefault(poi["name"], poi["fit"])
     return params_dict
 
 
@@ -38,14 +40,19 @@ def plot_scalefactors(ydata,poi, fig=None, ax=None,
     else:
         xax = np.array(xpositions, dtype=float)
     
+    # jms/jmr nuisances are stored in units of the reference variation (5% / 10%),
+    # so convert to a physical scale factor via  SF = 1 + scale * value.
+    # the tagger-score SFs (SF_tp*) are already absolute -> scale = 1, offset = 0.
     if 'jms' in poi:
-        scale = 0.05
+        scale, offset = 0.05, 1.0
     elif 'jmr' in poi:
-        scale = 0.1
+        scale, offset = 0.1, 1.0
+    elif poi.startswith('SF_'):
+        scale, offset = 1.0, 0.0
     else:
         raise ValueError(f"Unknown POI type: {poi}")
 
-    central_values = np.array([el[1] * scale + 1 for el in ydata], dtype=float)
+    central_values = np.array([el[1] * scale + offset for el in ydata], dtype=float)
     error_up = np.array([(el[2] - el[1]) * scale for el in ydata], dtype=float)
     error_down = np.array([(el[1] - el[0]) * scale for el in ydata], dtype=float)
 
@@ -68,6 +75,7 @@ def plot_scalefactors(ydata,poi, fig=None, ax=None,
         ax.set_ylim((0.9, 1.1))
     elif 'jmr' in poi:
         ax.set_ylim((0.8, 1.2))
+    # SF_tp* can sit well away from 1 in this measurement -> let matplotlib autoscale y
 
     if primary_xticklabels is not None:
         ax.set_xticks(ticks=xax, labels=primary_xticklabels, rotation=60, ha='right')
@@ -88,6 +96,8 @@ if __name__=='__main__':
 
     impactfiles = sys.argv[1:]
     pois = ['tp2jms', 'tp2jmr', 'tp1jms', 'tp1jmr', 'tp3jms', 'tp3jmr']
+    # tagger-score efficiency SFs, read from the "POIs" block of the impacts json
+    pois += ['SF_tp2', 'SF_tp3', 'SF_tp1']
 
     data = {}
     years = []

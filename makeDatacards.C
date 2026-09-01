@@ -73,23 +73,25 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   // get the histograms for pass
   TString inputFile = workdir+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_p.root";
   TFile *f_p = TFile::Open(inputFile, "READONLY");
-  TH1D  *h_obs_p    = (TH1D*)f_p->Get("data_obs"); 
+  TH1D  *h_obs_p    = (TH1D*)f_p->Get("data_obs");
   TH1D  *h_top_p1_p = (TH1D*)f_p->Get("tp1");
   TH1D  *h_top_p2_p = (TH1D*)f_p->Get("tp2");
   TH1D  *h_top_p3_p = (TH1D*)f_p->Get("tp3");
   TH1D  *h_other_p  = (TH1D*)f_p->Get("other");
-  
+  TH1D  *h_qcd_p    = (TH1D*)f_p->Get("qcd");
+
   // get the histograms for fail
   inputFile = workdir+"/"+algolabel+"_tt1l_"+wpmin+"to"+wpmax+"_"+era+"_"+name+"_templates_f.root";
   TFile *f_f = TFile::Open(inputFile, "READONLY");
-  TH1D  *h_obs_f    = (TH1D*)f_f->Get("data_obs");   
+  TH1D  *h_obs_f    = (TH1D*)f_f->Get("data_obs");
   TH1D  *h_top_p1_f = (TH1D*)f_f->Get("tp1");
   TH1D  *h_top_p2_f = (TH1D*)f_f->Get("tp2");
   TH1D  *h_top_p3_f = (TH1D*)f_f->Get("tp3");
   TH1D  *h_other_f  = (TH1D*)f_f->Get("other");
-  
+  TH1D  *h_qcd_f    = (TH1D*)f_f->Get("qcd");
+
   std::cout << "imax 2  number of channels\n";
-  std::cout << "jmax 3  number of processes -1\n";
+  std::cout << "jmax 4  number of processes -1\n";
   std::cout << "kmax *  number of nuisance parameters (sources of systematical uncertainties)\n";
   std::cout << "------------\n";
 
@@ -105,10 +107,10 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   std::cout << "# the second 'process' line must have a positive number for backgrounds, and 0 for signal\n";
   std::cout << "# then we list the independent sources of uncertainties, and give their effect (syst. error)\n";
   std::cout << "# on each process and bin\n";
-  std::cout << "bin             pass pass pass pass     fail fail fail fail  \n";
-  std::cout << "process         tp3  tp2  tp1  other    tp3  tp2  tp1  other  \n";  
-  std::cout << "process         -1   2    3    4        -1   2    3    4  \n";
-  std::cout << "rate            -1   -1   -1   -1       -1   -1   -1   -1  \n"; 
+  std::cout << "bin             pass pass pass pass pass     fail fail fail fail fail  \n";
+  std::cout << "process         tp3  tp2  tp1  other qcd     tp3  tp2  tp1  other qcd  \n";
+  std::cout << "process         -1   2    3    4     5       -1   2    3    4     5  \n";
+  std::cout << "rate            -1   -1   -1   -1    -1      -1   -1   -1   -1    -1  \n";
   std::cout << "------------\n";
 
   // todo: find out why these exact numbers (4, 3, 6, -7) were chosen for the process list.
@@ -116,33 +118,34 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   //       in the custom physics model (TagAndProbeExtended.py), but to double check.
 
 
-  std::cout << "lumi         lnN      1.025 1.025 1.025 1.025     1.025 1.025 1.025 1.025  \n";
-  std::cout << "\n";
-    
-  std::cout << "tp3_xsec     lnN      1.05 - - -    1.05 - - - \n";
-  std::cout << "tp2_xsec     lnN      - 1.05 - -    - 1.05 - - \n";
-  std::cout << "tp1_xsec     lnN      - - 1.05 -    - - 1.05 - \n";
-  std::cout << "other_xsec   lnN      - - - 1.30     - - - 1.30 \n";
-  
+  std::cout << "lumi         lnN      1.025 1.025 1.025 1.025 1.025     1.025 1.025 1.025 1.025 1.025  \n";
   std::cout << "\n";
 
-  std::cout << "tp3jms       shapeU    1 - - -    1 - - - \n";  
-  std::cout << "tp2jms       shapeU    - 1 - -    - 1 - - \n";
-  std::cout << "tp1jms       shapeU    - - 1 -    - - 1 - \n";
-  //std::cout << "otherjms     shapeU    - - - 1    - - - 1 \n";
+  std::cout << "tp3_xsec     lnN      1.05 - - - -    1.05 - - - - \n";
+  std::cout << "tp2_xsec     lnN      - 1.05 - - -    - 1.05 - - - \n";
+  std::cout << "tp1_xsec     lnN      - - 1.05 - -    - - 1.05 - - \n";
+  std::cout << "other_xsec   lnN      - - - 1.30 -     - - - 1.30 - \n";
+  std::cout << "qcd_xsec     lnN      - - - - 1.30     - - - - 1.30 \n";
 
-  std::cout << "tp3jmr       shapeU    1 - - -    1 - - - \n";  
-  std::cout << "tp2jmr       shapeU    - 1 - -    - 1 - - \n";
-  std::cout << "tp1jmr       shapeU    - - 1 -    - - 1 - \n";
-  //std::cout << "otherjmr     shapeU    - - - 1    - - - 1 \n";
-  
-  //std::cout << "pu          shape    1 1 1 -    1 1 1 - \n";
-  //std::cout << "jes         shape    1 1 1 -    1 1 1 - \n";
-  //std::cout << "jer         shape    1 1 1 -    1 1 1 - \n";
-  //std::cout << "met         shape    1 1 1 -    1 1 1 - \n";
-  std::cout << "lhescalemuf shape    1 1 1 -    1 1 1 - \n";
-  std::cout << "lhescalemur shape    1 1 1 -    1 1 1 - \n";
-  //std::cout << "lhepdf      shape    1 1 1 1    1 1 1 1 \n";
+  std::cout << "\n";
+
+  std::cout << "tp3jms       shapeU    1 - - - -    1 - - - - \n";
+  std::cout << "tp2jms       shapeU    - 1 - - -    - 1 - - - \n";
+  std::cout << "tp1jms       shapeU    - - 1 - -    - - 1 - - \n";
+  //std::cout << "otherjms     shapeU    - - - 1 -    - - - 1 - \n";
+
+  std::cout << "tp3jmr       shapeU    1 - - - -    1 - - - - \n";
+  std::cout << "tp2jmr       shapeU    - 1 - - -    - 1 - - - \n";
+  std::cout << "tp1jmr       shapeU    - - 1 - -    - - 1 - - \n";
+  //std::cout << "otherjmr     shapeU    - - - 1 -    - - - 1 - \n";
+
+  std::cout << "pu          shape    1 1 1 - -    1 1 1 - - \n";
+  //std::cout << "jes         shape    1 1 1 - -    1 1 1 - - \n";
+  //std::cout << "jer         shape    1 1 1 - -    1 1 1 - - \n";
+  //std::cout << "met         shape    1 1 1 - -    1 1 1 - - \n";
+  std::cout << "lhescalemuf shape    1 1 1 - -    1 1 1 - - \n";
+  std::cout << "lhescalemur shape    1 1 1 - -    1 1 1 - - \n";
+  //std::cout << "lhepdf      shape    1 1 1 1 1    1 1 1 1 1 \n";
     
   std::cout << "norm_top    rateParam    pass    tp3      1   [0.,10.]\n";
   std::cout << "norm_top    rateParam    fail    tp3      1   [0.,10.]\n";

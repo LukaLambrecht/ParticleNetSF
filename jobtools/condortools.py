@@ -70,7 +70,7 @@ def initJobScript(name,
 
 def makeJobDescription(name, exe, argstring=None, 
                        stdout=None, stderr=None, log=None,
-                       cpus=1, mem=1024, disk=10240, 
+                       cpus=1, mem=8000, disk=10240, 
                        proxy=None, jobflavour=None):
     ### create a single job description txt file
     # note: exe can for example be a runnable bash script
@@ -122,7 +122,7 @@ def submitCondorJob(jobDescription):
     os.system(cmd)
 
 def submitCommandAsCondorJob(name, command, stdout=None, stderr=None, log=None,
-                        cpus=1, mem=1024, disk=10240,
+                        cpus=1, mem=8000, disk=10240,
                         home=None,
                         proxy=None, 
                         cmssw_version=None,
@@ -137,7 +137,7 @@ def submitCommandAsCondorJob(name, command, stdout=None, stderr=None, log=None,
             jobflavour=jobflavour)
 
 def submitCommandsAsCondorCluster(name, commands, stdout=None, stderr=None, log=None,
-                        cpus=1, mem=1024, disk=10240,
+                        cpus=1, mem=8000, disk=10240,
                         home=None,
                         proxy=None,
                         cmssw_version=None,
@@ -177,7 +177,7 @@ def submitCommandsAsCondorCluster(name, commands, stdout=None, stderr=None, log=
     submitCondorJob(jdname)
 
 def submitCommandsAsCondorJob(name, commands, stdout=None, stderr=None, log=None,
-                        cpus=1, mem=1024, disk=10240, 
+                        cpus=1, mem=8000, disk=10240, 
                         home=None,
                         proxy=None,
                         cmssw_version=None,
@@ -193,7 +193,7 @@ def submitCommandsAsCondorJob(name, commands, stdout=None, stderr=None, log=None
                         jobflavour=jobflavour)
 
 def submitCommandsAsCondorJobs(name, commands, stdout=None, stderr=None, log=None,
-            cpus=1, mem=1024, disk=10240,
+            cpus=1, mem=8000, disk=10240,
             home=None,
             proxy=None,
             cmssw_version=None,

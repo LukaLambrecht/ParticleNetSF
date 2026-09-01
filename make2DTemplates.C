@@ -133,7 +133,7 @@ void makeTemplatesTop(TString sample, TString era, TString process, TString wpmi
   if (era == "2022postEE") { path = conf::path_2022postEE; intLumi = 26.67; }
   if (era == "2023preBPix") { path = conf::path_2023preBPix; intLumi = 18.08; }
   if (era == "2023postBPix") { path = conf::path_2023postBPix; intLumi = 9.69; }
-  if (era == "2024") { path = conf::path_2024; intLumi = 109.08; }
+  if (era == "2024") { path = conf::path_2024; intLumi = 108.3; }
   ostringstream tmpLumi; tmpLumi << intLumi; TString lumi = tmpLumi.str();
   std::cout << "Found following sample path: " << path << std::endl;
   std::cout << "Found following luminosity: " << intLumi << std::endl;
@@ -155,13 +155,13 @@ void makeTemplatesTop(TString sample, TString era, TString process, TString wpmi
   TFile *fout = new TFile(outfile, "RECREATE");
   std::cout << "Will write output to " << outfile << std::endl;
   
-  // cuts and matching definition
   TString c_base = TString("(passmetfilters && passMuTrig")
                    + " && fj_1_pt>=" + ptmin + " && fj_1_pt<" + ptmax
-                   //+ " && abs(fj_1_eta)<2.4)" for ttCR samples
-                   + " && abs(fj_1_eta)<2.4 && leptonicW_pt>150.)";
-                   //+ " && fj_1_scoutGloParT_HbbVsQCD > 0.08"; for ttCR samples
-  		             //+ " && bjet_closestFatJet_HbbVsQCD_for_cut > 0.25"; not being used for any samples rn
+                   + " && abs(fj_1_eta)<2.4" //&& leptonicW_pt>150.
+                   + "&& met >50"
+                   + " && fj_1_sdmass>50"
+                  // + " && fj_1_ParT_resonanceMass > 70 && fj_1_ParT_resonanceMass < 200"
+                   + " && muon_trackIso/muon_pt<0.0005)"; // this one the correct trackIso cut for scouting, same in the ttCR for main analysis
   TString c_p3 = TString("( (fj_1_dr_T_Wq_max<") + jetRadius + ")"
                  + " && (fj_1_dr_T_b<" + jetRadius + ") )";
   TString c_p2 = TString("((fj_1_T_Wq_max_pdgId==0") + " && fj_1_dr_W_daus<" + jetRadius + ")"
@@ -331,9 +331,6 @@ TH2D *create2Dhisto(TString sample, TTree *tree, TString intLumi, TString cuts,
   if (name.Contains("puUp"))        { puWgt = "puWeightUp"; }
   else if (name.Contains("puDown")) { puWgt = "puWeightDown"; }
   else                              { puWgt = "puWeight"; }
-  // temporary fix for the fact that puWeight does not seem to be a valid branch
-  // (todo: find out which branch (if any) to use later)
-  puWgt = "1.";
 
   // set up correct gen weight
   TString genWgt = "xsecWeight*genWeight";
