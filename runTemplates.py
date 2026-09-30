@@ -18,6 +18,7 @@ import argparse
 topdir = os.path.dirname(__file__)
 sys.path.append(topdir)
 import jobtools.condortools as ct
+import wptools
 
 
 def get_processes_from_config(cffile='configuration.h'):
@@ -82,6 +83,8 @@ parser.add_argument('-y', '--year', required=True, nargs='+',
   help='Data-taking year (note that multiple can be provided, separated by spaces).')
 parser.add_argument('-w', '--working_points', required=True,
   help='Path to json file with working point definitions.')
+parser.add_argument('--wp_mode', default='exclusive', choices=['exclusive', 'inclusive'],
+  help='How to turn the working point thresholds into score ranges')
 parser.add_argument('-o', '--outputdir', default='output', type=os.path.abspath,
   help='Define path where output should appear.')
 parser.add_argument('-p', '--processes', default=['all'], nargs='+',
@@ -156,20 +159,23 @@ for process in args.processes:
         msg += f' Options are {all_processes}.'
         raise Exception(msg)
 
+# translate the working points into score ranges
+wp_ranges = wptools.get_all_wp_ranges(working_points, args.year, mode=args.wp_mode, doprint=True)
+
 # make output directory and copy auxiliary files
 if not os.path.exists(args.outputdir): os.makedirs(args.outputdir)
 os.system(f'cp configuration.h {args.outputdir}')
 os.system(f'cp {args.working_points} {args.outputdir}')
 
-# loop over years and mistag rates and processes
+# loop over years and working points and processes
 jobs = []
 for year in args.year:
-    for mistag_rate, wp in working_points[year].items():
+    for label, wpmin, wpmax in wp_ranges[year]:
         for process in args.processes:
       
             # make the commands to run
             cmds = []
-            cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{process}", "{wp}", "1.00", "{args.outputdir}")' )
+            cmds.append( f'make2DTemplates.C("{year}", "tt1l", "{process}", "{wpmin}", "{wpmax}", "{args.outputdir}")' )
      
             for idx, cmd in enumerate(cmds):
                 cmds[idx] = f'root -l -q \'{cmd}\''

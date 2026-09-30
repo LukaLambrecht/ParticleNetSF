@@ -1,4 +1,6 @@
-import os, argparse, json
+import os, sys, argparse, json
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import wptools
 
 #input tagger and year to extract SFs
 #need to add more years and working points
@@ -10,6 +12,8 @@ if __name__=='__main__':
     parser.add_argument('-tag', '--tagger', required=True) # for example, w_md, w_nominal, t_nominal
     parser.add_argument('-year', '--year', required=True) # for example, 2016preVFP, 2016postVFP, 2017
     parser.add_argument('-jettype', '--jettype', default = "ak15")
+    parser.add_argument('-w', '--working_points', default = None) # json file with working points (overrides the hardcoded list for w_md)
+    parser.add_argument('--wp_mode', default = 'exclusive', choices = ['exclusive', 'inclusive']) # same as in runFullChain.py
 
     args = parser.parse_args()
 
@@ -17,11 +21,19 @@ if __name__=='__main__':
     if args.tagger == 'w_md':
         #pTrange = ['pt200to300', 'pt300to400', 'pt400to800', 'pt200to800']
         pTrange = ['pt200to400', 'pt400to500', 'pt500to800', 'pt200to800']
+        # note: working points are score ranges "<min>to<max>",
+        #       matching the naming of the fit output files.
         if args.year == '2016preVFP':
-            wp = [0.7, 0.8, 0.923]
+            wp = ['0.7to1.00', '0.8to1.00', '0.923to1.00']
         else:
-            #wp = [0.7, 0.8, 0.923]
-            wp = [0.58, 0.78, 0.93]
+            #wp = ['0.7to1.00', '0.8to1.00', '0.923to1.00']
+            wp = ['0.58to0.78', '0.78to0.93', '0.93to1.00']
+        # alternatively, take the score ranges from the json file (as in the run scripts)
+        if args.working_points is not None:
+            with open(args.working_points, 'r') as f:
+                working_points = json.load(f)
+            wp_ranges = wptools.get_wp_ranges(working_points[args.year], mode=args.wp_mode)
+            wp = [f'{wpmin}to{wpmax}' for _, wpmin, wpmax in wp_ranges]
         #elif args.year == '2016postVFP':
         #    wp = [0.642, 0.842, 0.907]
         #elif args.year == '2017':
@@ -48,14 +60,32 @@ if __name__=='__main__':
             if args.tagger == 'w_md':
 
                 #define and open the input file
-                filestring = f"impacts_particlenet_tt1l_{i}to1.00_{year}_{pt}.json"
+                filestring = f"impacts_particlenet_tt1l_{i}_{year}_{pt}.json"
                 with open(filestring, 'r') as f:
                     obj=json.load(f)
                 
                 #define output file name
-                outfileStr=f"wp_{i}to1.00_{tagger}_{year}_{jettype}_{pt}_jms_jmr.txt" 
+                outfileStr=f"wp_{i}_{tagger}_{year}_{jettype}_{pt}_jms_jmr.txt" 
                 txtout=open(outfileStr,"w")
-                txtout.write(f"{year} {i}to1.00 {tagger} {pt} {jettype}")
+                txtout.write(f"{year} {i} {tagger} {pt} {jettype}")
+                txtout.write("\n")
+
+                # tagging SF (POI of the fit)
+                pois_dict = {poi["name"]: poi["fit"]
+                for poi in obj["POIs"]}
+                sfname = 'SF_tp2'
+                fit = pois_dict.get(sfname)
+                if fit:
+                    txtout.write(f"{sfname}:")
+                    txtout.write("\n SF: ")
+                    txtout.write(f"{fit[1]}")
+                    txtout.write("\n Down Uncertainty: ")
+                    txtout.write(f"{fit[0]-fit[1]}")
+                    txtout.write("\n Up Uncertainty: ")
+                    txtout.write(f"{fit[2]-fit[1]}")
+                else:
+                    txtout.write(f"{sfname}: not found\n\n")
+                txtout.write("\n")
                 txtout.write("\n")
 
                 params_dict = {param["name"]: param["fit"]

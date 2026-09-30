@@ -156,4 +156,9 @@ void makeOneDatacard(TString workdir, TString wpmin, TString wpmax, TString name
   std::cout << "\n";
 
   std::cout << "*  autoMCStats  0\n";
+
+  // restore std::cout before the ofstream goes out of scope
+  // note: without this, std::cout is left pointing at the destroyed stream buffer of 'out',
+  //       which makes ROOT exit with code 11 after all the datacards have been written.
+  std::cout.rdbuf(coutbuf);
 }

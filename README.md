@@ -58,6 +58,16 @@ The required arguments are:
 - `-y / --year`: define which year to run on. Can also be multiple years separated by spaces.
 - `-w / --working_points`: path to a json file with working points. See [here](https://github.com/LukaLambrecht/ParticleNetSF/blob/ParticleNet_TopW_SFs_NanoV9/wps/wps_top.json) for an example of correct formatting.
 
+Optional arguments include:
+- `--wp_mode`: how to turn the working point thresholds into the score ranges used in the fit.
+  With `exclusive` (the default), the ranges are orthogonal, running from each threshold
+  to the next higher one (e.g. 0.58 - 0.78, 0.78 - 0.93 and 0.93 - 1.00 for thresholds 0.58, 0.78 and 0.93).
+  With `inclusive`, the ranges are nested, running from each threshold to 1.00
+  (e.g. 0.58 - 1.00, 0.78 - 1.00 and 0.93 - 1.00 for the same thresholds).
+  Note that the "fail" region is always the complement of the "pass" region,
+  so for exclusive working points it also contains the jets above the upper edge.
+  The same argument is available in `runTemplates.py` and `runFits.py`.
+
 Further settings are also defined in `configuration.h`.
 For example:
 - the branch name of the ParticleNet score to use
@@ -125,6 +135,10 @@ To modify the binning in pt
 To select different working points of the tagger:
 - Modify the `json` files in the `wps` folder, or create new ones
   (and provide them as command line argument when running `runFullChain.py`)
+- Use `--wp_mode` to switch between orthogonal (default) and nested score ranges.
+  Alternatively, define the score ranges explicitly in the `json` file
+  as `[min, max]` pairs instead of single thresholds; those are used as they are,
+  independent of `--wp_mode`.
 
 To enable or disable systematics:
 - Modify `configuration.h`, in particular the list of systematics.
