@@ -159,7 +159,7 @@ void makeTemplatesTop(TString sample, TString era, TString process, TString wpmi
                    + " && fj_1_pt>=" + ptmin + " && fj_1_pt<" + ptmax
                    + " && abs(fj_1_eta)<2.4" //&& leptonicW_pt>150.
                    + " && met >50"
-                   + " && leptonicW_pt>150."
+                   //+ " && leptonicW_pt>150."
                    //+ " && fj_1_sdmass>50"
                    + "&& fj_1_sdmass + 10 > 0.8*fj_1_ParT_resonanceMass && fj_1_sdmass + 10 < 1.2*fj_1_ParT_resonanceMass"
                   // + " && fj_1_ParT_resonanceMass > 70 && fj_1_ParT_resonanceMass < 200"
