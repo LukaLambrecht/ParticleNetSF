@@ -75,12 +75,16 @@ void makeOneFit(std::string workdir, std::string era, std::string category,
       + " -P HiggsAnalysis.CombinedLimit.TagAndProbeExtended:tagAndProbe "
       + datacard + " --PO categories=" + pos;
  
+  // drop the RooRombergIntegrator "did not converge" warnings (and their 20-line traces),
+  // which otherwise produce >100 GB of stdout and get condor jobs evicted
+  std::string quiet = " 2>&1 | grep -vE 'RooRombergIntegrator|^ +\\[[0-9]+\\] h = '";
+
   // make other commandsi
   std::string multidimfit = "combine -M MultiDimFit -m 125 -n _" + fullname + " "
-      + workspace + " --algo=singles --robustFit 1 --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3";
+      + workspace + " --algo=singles --robustFit 1 --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3" + quiet;
   
   std::string fitdiagnostics = "combine -M FitDiagnostics -m 125 -n _" + fullname + " "
-      + workspace + " --saveShapes --robustFit 1 --robustHesse 1 --saveWithUncertainties --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3";
+      + workspace + " --saveShapes --robustFit 1 --robustHesse 1 --saveWithUncertainties --numToysForShapes 50 --skipBOnlyFit --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3" + quiet;
   
   //std::string multidimfit = "combine -M MultiDimFit -m 125 -n _" + fullname + " "
   //    + workspace + " --algo=singles --robustFit 1 --cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3";
@@ -113,11 +117,11 @@ void makeOneFit(std::string workdir, std::string era, std::string category,
 
   // make impacts commands
   std::string impacts_1 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 --doInitialFit"
-    + " --cminDefaultMinimizerStrategy 0 --robustFit 1 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3 --exclude 'rgx{prop.*}'";
+    + " --cminDefaultMinimizerStrategy 0 --robustFit 1 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3 --exclude 'rgx{prop.*}'" + quiet;
   std::string impacts_2 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 --doFits"
-    + " --cminDefaultMinimizerStrategy 0 --robustFit 1 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3 --exclude 'rgx{prop.*}' --parallel 60";
+    + " --cminDefaultMinimizerStrategy 0 --robustFit 1 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3 --exclude 'rgx{prop.*}' --parallel 60" + quiet;
   std::string impacts_3 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 -o impacts_" + fullname + ".json"
-    + " --cminDefaultMinimizerStrategy 0 --robustFit 1 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3 --exclude 'rgx{prop.*}'";
+    + " --cminDefaultMinimizerStrategy 0 --robustFit 1 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3:tp3jmr=0,3:tp3jms=-3,3 --exclude 'rgx{prop.*}'" + quiet;
   
   //std::string impacts_1 = "combineTool.py -M Impacts -n " + fullname + " -d " + workspace + " -m 125 --doInitialFit"
   //  + " --cminDefaultMinimizerStrategy 0 --robustFit 1 --cminDefaultMinimizerTolerance 5. --setParameterRanges tp2jms=-3,3:tp2jmr=0,3:tp1jmr=0,3:tp1jms=-3,3 --exclude 'rgx{prop.*}'";

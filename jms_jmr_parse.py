@@ -2,6 +2,7 @@ import os, argparse, json
 
 #input tagger and year to extract SFs
 #need to add more years and working points
+#usage: python3 jms_jmr_parse.py -tag w_md -year 2024 --wp_mode exclusive
 
 if __name__=='__main__':
     
